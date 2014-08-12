@@ -9,7 +9,7 @@
 #include <linux/spi/spidev.h>
 #include <sys/ioctl.h>
 
-static char * project = "set-spi";
+static char * project = "spi-config";
 static char * version = "0.1";
 
 

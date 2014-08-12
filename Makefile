@@ -1,7 +1,7 @@
 CFLAGS=-Wall
 
 EXEC_FILES=          \
-        set-spi      \
+        spi-config   \
         spi-pipe     \
 
 
