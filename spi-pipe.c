@@ -37,7 +37,6 @@ static void display_usage(const char * name)
 	fprintf(stderr, "  options:\n");
 	fprintf(stderr, "    -d --device=<dev>    use the given spi-dev character device.\n");
 	fprintf(stderr, "    -b --blocksize=<int> transfer blocks size in byte\n");
-	fprintf(stderr, "    -r --readonly        don't wait for standart input\n");
 	fprintf(stderr, "    -h --help            this screen\n");
 	fprintf(stderr, "    -v --version         display the version number\n");
 }
@@ -50,7 +49,6 @@ int main (int argc, char * argv[])
 	static struct option options[] = {
 		{"device",    required_argument, NULL,  'd' },
 		{"blocksize", required_argument, NULL,  'b' },
-		{"readonly",  no_argument,       NULL,  'r' },
 		{"help",      no_argument,       NULL,  'h' },
 		{"version",   no_argument,       NULL,  'v' },
 		{0,           0,                 0,  0 }
@@ -61,7 +59,6 @@ int main (int argc, char * argv[])
 	uint8_t     * rx_buffer = NULL;
 	uint8_t     * tx_buffer = NULL;
 	int           blocksize = 1;
-	int           readonly = 0;
 	int           offset   = 0;
 	int           nb       = 0;
 
@@ -78,9 +75,6 @@ int main (int argc, char * argv[])
 
 	while ((opt = getopt_long(argc, argv, "d:b:rhv", options, &long_index)) >= 0) {
 		switch(opt) {
-			case 'r':
-				readonly = 1;
-				break;
 			case 'h':
 				display_usage(argv[0]);
 				exit(EXIT_SUCCESS);
@@ -130,13 +124,13 @@ int main (int argc, char * argv[])
 	}
 
 	while (1) {
-		offset = 0;
-		if (! readonly) {
+		for (offset = 0; offset < blocksize; offset += nb) {
 			nb = read(STDIN_FILENO, & (tx_buffer[offset]), blocksize - offset);
 			if (nb <= 0)
 				break;
-			offset += nb;
 		}
+		if (nb <= 0)
+			break;
 
 		if (ioctl(fd, SPI_IOC_MESSAGE(1), & transfer) < 0) {
 			perror("SPI_IOC_MESSAGE");
@@ -148,6 +142,6 @@ int main (int argc, char * argv[])
 	free(rx_buffer);
 	free(tx_buffer);
 	
-	return EXIT_SUCCESS;
+	return EXIT_FAILURE;
 }
 
