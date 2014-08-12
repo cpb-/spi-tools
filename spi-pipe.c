@@ -29,7 +29,6 @@
 #include <sys/ioctl.h>
 
 static char * project = "spi-pipe";
-static char * version = "0.1";
 
 
 static void display_usage(const char * name)
@@ -86,7 +85,7 @@ int main (int argc, char * argv[])
 				display_usage(argv[0]);
 				exit(EXIT_SUCCESS);
 			case 'v':
-				fprintf(stderr, "%s - %s\n", project, version);
+				fprintf(stderr, "%s - %s\n", project, VERSION);
 				exit(EXIT_SUCCESS);
 			case 'd':
 				device = optarg;

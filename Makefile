@@ -1,4 +1,7 @@
-CFLAGS=-Wall
+
+PROJECT_VERSION=\"$(shell git describe)\"
+
+CFLAGS=-Wall -DVERSION=$(PROJECT_VERSION)
 
 EXEC_FILES=          \
         spi-config   \
