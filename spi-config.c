@@ -33,7 +33,7 @@ static char * project = "spi-config";
 typedef struct spi_config {
 	int        mode;  // [0-3]  (-1 when not configured).
 	int        lsb;   // {0,1}  (-1 when not configured).
-	int        bits;  // {7,8}  (-1 when not configured).
+	int        bits;  // [7...] (-1 when not configured).
 	uint32_t   speed; // 0 when not configured.
 } spi_config_t;
 
@@ -51,7 +51,7 @@ static void display_usage(const char * name)
 	fprintf(stderr, "             2: high iddle level, sample on leading edge\n");
 	fprintf(stderr, "             3: high iddle level, sample on trailing edge\n");
 	fprintf(stderr, "    -l --lsb={0,1}     LSB first (1) or MSB first (0)\n");
-	fprintf(stderr, "    -b --bits={7,8}    bits per byte\n");
+	fprintf(stderr, "    -b --bits=[7...]   bits per word\n");
 	fprintf(stderr, "    -s --speed=<int>   set the speed in Hz\n");
 	fprintf(stderr, "    -h --help          this screen\n");
 	fprintf(stderr, "    -v --version       display the version number\n");
@@ -119,8 +119,8 @@ int main (int argc, char * argv[])
 
 			case 'b':
 				if ((sscanf(optarg, "%d", & val) != 1)
-				 || (val < 7) || (val > 8)) {
-					fprintf(stderr, "%s: wrong bits per byte value ([7,8])\n", argv[0]);
+				 || (val < 7)) {
+					fprintf(stderr, "%s: wrong bits per word value [7...]\n", argv[0]);
 					exit(EXIT_FAILURE);
 				}
 				new_config.bits = val;
