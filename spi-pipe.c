@@ -18,8 +18,6 @@
  *
  */
 
-#define _GNU_SOURCE   // getopt_long()
-
 #include <fcntl.h>
 #include <getopt.h>
 #include <stdint.h>
