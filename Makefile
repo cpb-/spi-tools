@@ -1,5 +1,5 @@
 
-PROJECT_VERSION=\"$(shell git describe)\"
+PROJECT_VERSION=\"$(shell git describe --tags)\"
 
 CFLAGS=-Wall -DVERSION=$(PROJECT_VERSION)
 
