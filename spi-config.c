@@ -143,7 +143,7 @@ int main (int argc, char * argv[])
 	}
 
 	if (device == NULL) {
-		fprintf(stderr, "%s: no device specified\n", argv[0]);
+		fprintf(stderr, "%s: no device specified (use option -h for help).\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
