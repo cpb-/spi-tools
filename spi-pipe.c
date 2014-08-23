@@ -36,9 +36,10 @@ static void display_usage(const char * name)
 	fprintf(stderr, "usage: %s options...\n", name);
 	fprintf(stderr, "  options:\n");
 	fprintf(stderr, "    -d --device=<dev>    use the given spi-dev character device.\n");
-	fprintf(stderr, "    -b --blocksize=<int> transfer blocks size in byte\n");
-	fprintf(stderr, "    -h --help            this screen\n");
-	fprintf(stderr, "    -v --version         display the version number\n");
+	fprintf(stderr, "    -b --blocksize=<int> transfer block size in byte.\n");
+	fprintf(stderr, "    -n --number=<int>    number of blocks to transfer (-1 = infinite).\n");
+	fprintf(stderr, "    -h --help            this screen.\n");
+	fprintf(stderr, "    -v --version         display the version number.\n");
 }
 
 int main (int argc, char * argv[])
@@ -49,18 +50,20 @@ int main (int argc, char * argv[])
 	static struct option options[] = {
 		{"device",    required_argument, NULL,  'd' },
 		{"blocksize", required_argument, NULL,  'b' },
+		{"number",    required_argument, NULL,  'n' },
 		{"help",      no_argument,       NULL,  'h' },
 		{"version",   no_argument,       NULL,  'v' },
 		{0,           0,                 0,  0 }
 	};
 
-	char *        device = NULL;
 	int           fd;
-	uint8_t     * rx_buffer = NULL;
-	uint8_t     * tx_buffer = NULL;
-	int           blocksize = 1;
-	int           offset   = 0;
-	int           nb       = 0;
+	char *        device      = NULL;
+	uint8_t     * rx_buffer   =  NULL;
+	uint8_t     * tx_buffer   =  NULL;
+	int           blocksize   =  1;
+	int           blocknumber = -1;
+	int           offset      =  0;
+	int           nb          =  0;
 
 
 	struct spi_ioc_transfer transfer = {
@@ -73,7 +76,7 @@ int main (int argc, char * argv[])
 	};
 
 
-	while ((opt = getopt_long(argc, argv, "d:b:rhv", options, &long_index)) >= 0) {
+	while ((opt = getopt_long(argc, argv, "d:b:n:rhv", options, &long_index)) >= 0) {
 		switch(opt) {
 			case 'h':
 				display_usage(argv[0]);
@@ -88,6 +91,14 @@ int main (int argc, char * argv[])
 				if ((sscanf(optarg, "%d", & blocksize) != 1)
 				 || (blocksize < 0) || (blocksize > 16384)) {
 					fprintf(stderr, "%s: wrong blocksize\n", argv[0]);
+					exit(EXIT_FAILURE);
+				}
+				break;
+
+			case 'n':
+				if ((sscanf(optarg, "%d", & blocknumber) != 1)
+				 || (blocknumber < -1)) {
+					fprintf(stderr, "%s: wrong block number\n", argv[0]);
 					exit(EXIT_FAILURE);
 				}
 				break;
@@ -123,7 +134,7 @@ int main (int argc, char * argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	while (1) {
+	while ((blocknumber > 0) || (blocknumber == -1)) {
 		for (offset = 0; offset < blocksize; offset += nb) {
 			nb = read(STDIN_FILENO, & (tx_buffer[offset]), blocksize - offset);
 			if (nb <= 0)
@@ -138,10 +149,13 @@ int main (int argc, char * argv[])
 		}
 		if (write(STDOUT_FILENO, rx_buffer, blocksize) <= 0)
 			break;
+		if (blocknumber > 0)
+			blocknumber --;
 	}
 	free(rx_buffer);
 	free(tx_buffer);
-	
-	return EXIT_FAILURE;
+	if (blocknumber != 0)
+		return EXIT_FAILURE;
+	return EXIT_SUCCESS;
 }
 

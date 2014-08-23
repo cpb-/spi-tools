@@ -34,11 +34,11 @@ Usage
 * `-d --device=<dev>`  use the given spi-dev character device.
 * `-q --query`         print the current configuration.
 * `-m --mode=[0-3]`    use the selected spi mode.
-* `-l --lsb={0,1}`     LSB first (1) or MSB first (0)
-* `-b --bits=[7...]`   bits per word
-* `-s --speed=<int>`   set the speed in Hz
-* `-h --help`          help screen
-* `-v --version`         display the version number
+* `-l --lsb={0,1}`     LSB first (1) or MSB first (0).
+* `-b --bits=[7...]`   bits per word.
+* `-s --speed=<int>`   set the speed in Hz.
+* `-h --help`          help screen.
+* `-v --version`       display the version number.
 
 #### Read the current configuration
 
@@ -60,9 +60,10 @@ $
 ### spi-pipe usage
 #### Options
 * `-d --device=<dev>`    use the given spi-dev character device.
-* `-b --blocksize=<int>` transfer blocks size in byte
-* `-h --help`            help screen
-* `-v --version`         display the version number
+* `-b --blocksize=<int>` transfer block size in byte.
+* `-n --number=<int>`    number of blocks to transfer.
+* `-h --help`            help screen.
+* `-v --version`         display the version number.
 
 #### Send and receive simultaneously
 Sending data from `command-1` to SPI link and receiving data from SPI link to `command-2`
@@ -84,4 +85,10 @@ $ command_1 | spi-pipe -d /dev/spidev0.0
 ```
 $ spi-pipe -d /dev/spidev0.0 < /dev/zero | command_2
 ```
+
+### Read 40 blocks of 4 bytes from the SPI link
+```
+$ spi-pipe -d /dev/spidev0.0 -b 4 -n 40 < /dev/zero | command_2
+```
+
 
