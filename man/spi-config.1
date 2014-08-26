@@ -1,0 +1,70 @@
+.TH SPI-CONFIG "1" "August 2014" "SPI-tools" "User Commands"
+.SH NAME
+spi-config \- set or query SPI configuration.
+.SH SYNOPSIS
+.B spi-config
+\fIoptions\fR...
+.SH DESCRIPTION
+.PP
+Set or query the configuration of a SPI port.
+.TP
+\fB\-d\fR, \fB\-\-device\fR=\fIDEVICE\fR
+use the given Linux spidev character device.
+.TP
+\fB\-q\fR, \fB\-\-query\fR
+print the current configuration.
+.TP
+\fB\-m\fR, \fB\-\-mode\fR=\fI[0-3]\fR
+set the spi mode (see SPI MODES below).
+.TP
+\fB\-l\fR, \fB\-\-lsb\fR=\fI{0,1}\fR
+set LSB first (1) or MSB first (0).
+.TP
+\fB\-b\fR, \fB\-\-bits\fR=\fI[7...]\fR
+set the number of bits per word.
+.TP
+\fB\-s\fR, \fB\-\-speed\fR=\fIFREQUENCY\fR
+set clock frequency (in Hz).
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+display the help screen and exit.
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+display the version number and exit.
+
+.SS "SPI MODES"
+.TP
+mode 0
+low iddle level, sample on leading edge.
+.TP
+mode 1
+low iddle level, sample on trailing edge.
+.TP
+mode 2
+high iddle level, sample on leading edge.
+.TP
+mode 3
+high iddle level, sample on trailing edge.
+.SH EXAMPLES
+.TP
+Get help:
+$ \fBspi\-config \-h\fR
+.TP
+Query current configuration:
+$ \fBspi\-config \-\-device=/dev/spidev0.0 \-q\fR
+.TP
+Change clock frequency to 1 MHz:
+$ \fBspi\-config \-\-device=/dev/spidev0.0 \-\-speed=1000000\fR
+.SH AUTHOR
+Written by Christophe BLAESS <http://www.blaess.fr/christophe>.
+.SH "REPORTING BUGS"
+.br
+Github home page: <https://github.com/cpb-/spi-tools.git>
+.SH COPYRIGHT
+Copyright \(co 2014 Christophe Blaess.
+.br
+Licensed under GPLv2 <http://gnu.org/licenses/gpl.html>.
+.br
+This is free software: you are free to change and redistribute it.
+.br
+There is NO WARRANTY, to the extent permitted by law.
