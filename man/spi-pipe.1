@@ -1,0 +1,59 @@
+.TH SPI-PIPE "1" "August 2014" "SPI-tools" "User Commands"
+.SH NAME
+spi-pipe \- full-duplex SPI communication tool.
+.SH SYNOPSIS
+.B spi-pipe
+\fIoptions\fR...
+.SH DESCRIPTION
+.PP
+This program allows full-duplex communications, sending data from its
+standard input to the SPI slave, and displaying on its standard output the
+data received from the SPI port.
+.TP
+\fB\-d\fR, \fB\-\-device\fR=\fIDEVICE\fR
+use the given Linux spidev character device.
+.TP
+\fB\-b\fR, \fB\-\-blocksize\fR=\fI<int>\fR
+set the block size (in bytes) for transfert.
+.TP
+\fB\-n\fR, \fB\-\-number\fR=\fI<int>\fR
+set the number of blocks to transmit (-1 for continuous transfert).
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+display the help screen and exit.
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+display the version number and exit.
+
+.SH EXAMPLES
+.TP
+Get help:
+$ \fBspi\-pipe \-h\fR
+.TP
+Send and receive at the same time
+$ \fIcommand-1\fR | \fBspi\-pipe \-\-device=/dev/spidev0.0 \fR | \fIcommand-2\fR
+.br
+Note that \fIcommand-1\fR, \fIcommand-2\fR and \fBspi\-pipe\fR run simultaneously
+in three different processes.
+.TP
+Send data to the SPI link
+$ \fIcommand-1\fR | \fBspi\-pipe \-\-device=/dev/spidev0.0 \fR
+.TP
+Receive data from the SPI link
+$ \fBspi\-pipe \-\-device=/dev/spidev0.0 < /dev/zero\fR | \fIcommand-2\fR
+.TP
+Read 40 blocks of 4 bytes from the SPI link
+$  \fBspi\-pipe \-\-device=/dev/spidev0.0 \-b 4 \-n 40 < /dev/zero\fR | \fIcommand-2\fR
+.SH AUTHOR
+Written by Christophe BLAESS <http://www.blaess.fr/christophe>.
+.SH "REPORTING BUGS"
+.br
+Github home page: <https://github.com/cpb-/spi-tools.git>
+.SH COPYRIGHT
+Copyright \(co 2014 Christophe Blaess.
+.br
+Licensed under GPLv2 <http://gnu.org/licenses/gpl.html>.
+.br
+This is free software: you are free to change and redistribute it.
+.br
+There is NO WARRANTY, to the extent permitted by law.
