@@ -86,7 +86,7 @@ $ command_1 | spi-pipe -d /dev/spidev0.0
 $ spi-pipe -d /dev/spidev0.0 < /dev/zero | command_2
 ```
 
-### Read 40 blocks of 4 bytes from the SPI link
+#### Read 40 blocks of 4 bytes from the SPI link
 ```
 $ spi-pipe -d /dev/spidev0.0 -b 4 -n 40 < /dev/zero | command_2
 ```
