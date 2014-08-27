@@ -25,7 +25,10 @@ Installation
 ------------
 First, get the latest version on https://github.com/cpb-/spi-tools.git
 
-There is no need for configuration. Simply do a `make` to build the tools, then `make install` to install them. By default they are installed in `/usr/sbin` but you can change this location by setting the `INSTALL_DIR` environment variable on the `make install` command line (or by editing the `Makefile`). You can use `make uninstall` to remove the installed files.
+There is no need for configuration. Simply do a `make` to build the tools, then `make install` to install them and the man pages.
+By default the spi-tools are installed in `/usr/sbin` but you can change this location by setting the `INSTALL_DIR` variable in the `src/Makefile` file.
+The man pages are installed in `/usr/share/man/man1`, you can change this in the `man/Makefile` file.
+You can use `make uninstall` to remove the installed files.
 
 Usage
 -----
