@@ -1,32 +1,26 @@
 
-PROJECT_VERSION=\"$(shell git describe --tags)\"
-
-CFLAGS=-Wall -DVERSION=$(PROJECT_VERSION)
-
-INSTALL_DIR?=/usr/sbin/
-
-EXEC_FILES=          \
-        spi-config   \
-        spi-pipe     \
-
-
 .PHONY: all
-all: ${EXEC_FILES}
+all:
+	\set -e;                          \
+	cd src; make all; cd ..;          \
+	cd man; make all; cd ..;          \
 
 
 .PHONY: clean
 clean:
-	rm -f ${EXEC_FILES} *.o *~
-
+	\set -e;                          \
+	cd src; make clean; cd ..;        \
+	cd man; make clean; cd ..;        \
 
 .PHONY: install
-install: ${EXEC_FILES}
-	install ${EXEC_FILES} "${INSTALL_DIR}"
+install:
+	\set -e;                          \
+	cd src; make install; cd ..;      \
+	cd man; make install; cd ..;      \
 
 .PHONY: uninstall
 uninstall:
-	@set -e;                          \
-	for f in ${EXEC_FILES}; do        \
-	    rm -f "${INSTALL_DIR}/$${f}"; \
-	done                              \
+	\set -e;                          \
+	cd src; make uninstall; cd ..;    \
+	cd man; make uninstall; cd ..;    \
 

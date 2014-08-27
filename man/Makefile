@@ -1,0 +1,30 @@
+
+MAN1_INSTALL_DIR    ?=/usr/share/man/man1
+
+MAN1_GZ_FILES=           \
+	spi-config.1.gz  \
+	spi-pipe.1.gz    \
+
+.PHONY: all
+all: ${MAN1_GZ_FILES}
+
+
+.PHONY: clean
+clean:
+	rm -f ${MAN1_GZ_FILES} *~
+
+
+.PHONY: install
+install: ${MAN1_GZ_FILES}
+	install ${MAN1_GZ_FILES} "${MAN1_INSTALL_DIR}"
+
+.PHONY: uninstall
+uninstall:
+	@set -e;                               \
+	for f in ${MAN1_GZ_FILES}; do          \
+	    rm -f "${MAN1_INSTALL_DIR}/$${f}"; \
+	done;                                  \
+
+%.1.gz: %.1
+	gzip -c $< > $@
+
