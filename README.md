@@ -89,6 +89,8 @@ $ command_1 | spi-pipe -d /dev/spidev0.0
 $ spi-pipe -d /dev/spidev0.0 < /dev/zero | command_2
 ```
 
+You can also use `command_2 < /dev/spidev0.0` but with `spi-pipe` you control what is sent to the device (always `0` in this case).
+
 #### Read 40 blocks of 4 bytes from the SPI link
 ```
 $ spi-pipe -d /dev/spidev0.0 -b 4 -n 40 < /dev/zero | command_2

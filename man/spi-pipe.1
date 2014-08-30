@@ -41,6 +41,9 @@ $ \fIcommand-1\fR | \fBspi\-pipe \-\-device=/dev/spidev0.0 \fR
 .TP
 Receive data from the SPI link
 $ \fBspi\-pipe \-\-device=/dev/spidev0.0 < /dev/zero\fR | \fIcommand-2\fR
+.br
+You can also use \fIcommand-2 < /dev/spidev0.0\fR but with \fBspi-pipe\fR you can control
+what is sent to the device (always `0` here).
 .TP
 Read 40 blocks of 4 bytes from the SPI link
 $  \fBspi\-pipe \-\-device=/dev/spidev0.0 \-b 4 \-n 40 < /dev/zero\fR | \fIcommand-2\fR
