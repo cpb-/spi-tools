@@ -1,6 +1,10 @@
 
 PROJECT_VERSION=\"$(shell git describe --tags)\"
 
+CROSS_COMPILE?=
+
+CC=$(CROSS_COMPILE)gcc
+
 CFLAGS=-Wall -DVERSION=$(PROJECT_VERSION)
 
 INSTALL_DIR ?=/usr/sbin/

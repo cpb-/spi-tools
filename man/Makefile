@@ -1,5 +1,6 @@
 
-MAN1_INSTALL_DIR    ?=/usr/share/man/man1
+MAN_INSTALL_DIR  ?= /usr/share/man
+MAN1_INSTALL_DIR ?= ${MAN_INSTALL_DIR}/man1
 
 MAN1_GZ_FILES=           \
 	spi-config.1.gz  \
@@ -16,6 +17,7 @@ clean:
 
 .PHONY: install
 install: ${MAN1_GZ_FILES}
+	mkdir -p "${MAN1_INSTALL_DIR}"
 	install ${MAN1_GZ_FILES} "${MAN1_INSTALL_DIR}"
 
 .PHONY: uninstall
