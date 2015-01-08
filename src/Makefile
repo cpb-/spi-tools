@@ -24,6 +24,7 @@ clean:
 
 .PHONY: install
 install: ${EXEC_FILES}
+	install -d "${INSTALL_DIR}"
 	install ${EXEC_FILES} "${INSTALL_DIR}"
 
 .PHONY: uninstall
