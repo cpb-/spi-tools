@@ -7,7 +7,7 @@ CC?=$(CROSS_COMPILE)gcc
 
 CFLAGS=-Wall -DVERSION=$(PROJECT_VERSION)
 
-INSTALL_DIR ?=/usr/sbin/
+INSTALL_DIR ?=$(DESTDIR)/usr/sbin/
 
 EXEC_FILES=                  \
         spi-config           \
