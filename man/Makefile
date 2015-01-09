@@ -1,5 +1,5 @@
 
-MAN_INSTALL_DIR  ?= /usr/share/man
+MAN_INSTALL_DIR  ?= $(DESTDIR)/usr/share/man
 MAN1_INSTALL_DIR ?= ${MAN_INSTALL_DIR}/man1
 
 MAN1_GZ_FILES=           \

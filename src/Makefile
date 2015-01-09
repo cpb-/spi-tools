@@ -3,11 +3,11 @@ PROJECT_VERSION=\"$(shell git describe --tags)\"
 
 CROSS_COMPILE?=
 
-CC=$(CROSS_COMPILE)gcc
+CC?=$(CROSS_COMPILE)gcc
 
 CFLAGS=-Wall -DVERSION=$(PROJECT_VERSION)
 
-INSTALL_DIR ?=/usr/sbin/
+INSTALL_DIR ?=$(DESTDIR)/usr/sbin/
 
 EXEC_FILES=                  \
         spi-config           \
@@ -24,6 +24,7 @@ clean:
 
 .PHONY: install
 install: ${EXEC_FILES}
+	install -d "${INSTALL_DIR}"
 	install ${EXEC_FILES} "${INSTALL_DIR}"
 
 .PHONY: uninstall
