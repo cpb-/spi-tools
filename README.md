@@ -26,7 +26,7 @@ Installation
 First, get the latest version on https://github.com/cpb-/spi-tools.git
 
 There is no need for configuration. Simply do a `make` to build the tools, then `make install` to install them and the man pages.
-If you have to use a cross-compilation toolchain, simply fill the `CROSS_COMPILE\ environment variable with the cross-compiler prefix.
+If you have to use a cross-compilation toolchain, simply fill the `CROSS_COMPILE` environment variable with the cross-compiler prefix.
 By default the spi-tools are installed in `/usr/sbin` but you can change this location by setting the `INSTALL_DIR` environement variable.
 The man pages are installed under `/usr/share/man` but you can change this by setting the `MAN_INSTALL_DIR` environment variable.
 You can use `make uninstall` to remove the installed files.
