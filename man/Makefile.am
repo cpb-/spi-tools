@@ -1,0 +1,1 @@
+dist_man_MANS = spi-config.1 spi-pipe.1
