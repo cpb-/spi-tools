@@ -1,0 +1,49 @@
+# http://www.gnu.org/software/automake
+
+Makefile.in
+
+# http://www.gnu.org/software/autoconf
+
+/autom4te.cache
+/aclocal.m4
+/compile
+/configure
+/depcomp
+/install-sh
+/missing
+stamp-h1
+.deps
+Makefile
+config.h.in*
+config.log
+config.status
+
+
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+src/spi-pipe
+src/spi-config
