@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <linux/spi/spidev.h>
 #include <sys/ioctl.h>
+#include "config.h"
 
 static char * project = "spi-pipe";
 
