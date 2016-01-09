@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <linux/ioctl.h>
 #include <linux/spi/spidev.h>
 #include <sys/ioctl.h>
 
