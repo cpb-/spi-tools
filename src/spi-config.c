@@ -88,7 +88,7 @@ int main (int argc, char * argv[])
 	uint32_t      u32;
 	int           query_only = 0;
 
-	while ((opt = getopt_long(argc, argv, "d:qhvm:l:b:s:", options, &long_index)) >= 0) {
+	while ((opt = getopt_long(argc, argv, "d:qhvm:l:b:s:r:", options, &long_index)) >= 0) {
 		switch(opt) {
 			case 'q':
 				query_only = 1;
