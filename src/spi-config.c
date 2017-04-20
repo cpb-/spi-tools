@@ -192,7 +192,7 @@ int main (int argc, char * argv[])
 	config.speed = u32;
 
 	if (query_only) {
-		fprintf(stdout, "%s: mode=%d, lsb=%d, bits=%d, speed=%d\n, spiready=%d",
+		fprintf(stdout, "%s: mode=%d, lsb=%d, bits=%d, speed=%d, spiready=%d\n",
 		        device, config.mode, config.lsb, config.bits, config.speed, config.spiready);
 		exit(EXIT_SUCCESS);
 	}
