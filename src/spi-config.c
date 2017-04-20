@@ -48,10 +48,10 @@ static void display_usage(const char * name)
 	fprintf(stderr, "    -d --device=<dev>  use the given spi-dev character device.\n");
 	fprintf(stderr, "    -q --query         print the current configuration.\n");
 	fprintf(stderr, "    -m --mode=[0-3]    use the selected spi mode:\n");
-	fprintf(stderr, "             0: low iddle level, sample on leading edge,\n");
-	fprintf(stderr, "             1: low iddle level, sample on trailing edge,\n");
-	fprintf(stderr, "             2: high iddle level, sample on leading edge,\n");
-	fprintf(stderr, "             3: high iddle level, sample on trailing edge.\n");
+	fprintf(stderr, "             0: low idle level, sample on leading edge,\n");
+	fprintf(stderr, "             1: low idle level, sample on trailing edge,\n");
+	fprintf(stderr, "             2: high idle level, sample on leading edge,\n");
+	fprintf(stderr, "             3: high idle level, sample on trailing edge.\n");
 	fprintf(stderr, "    -l --lsb={0,1}     LSB first (1) or MSB first (0).\n");
 	fprintf(stderr, "    -b --bits=[7...]   bits per word.\n");
 	fprintf(stderr, "    -s --speed=<int>   set the speed in Hz.\n");
