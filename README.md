@@ -41,6 +41,7 @@ Usage
 * `-m --mode=[0-3]`    use the selected spi mode.
 * `-l --lsb={0,1}`     LSB first (1) or MSB first (0).
 * `-b --bits=[7...]`   bits per word.
+* `-r --spirdy={0,1}`   set the SPI_READY spi mode flag.
 * `-s --speed=<int>`   set the speed in Hz.
 * `-h --help`          help screen.
 * `-v --version`       display the version number.
