@@ -38,6 +38,7 @@ static void display_usage(const char * name)
 	fprintf(stderr, "usage: %s options...\n", name);
 	fprintf(stderr, "  options:\n");
 	fprintf(stderr, "    -d --device=<dev>    use the given spi-dev character device.\n");
+	fprintf(stderr, "    -s --speed=<speed>   Maximum SPI clock rate (in Hz).\n");
 	fprintf(stderr, "    -b --blocksize=<int> transfer block size in byte.\n");
 	fprintf(stderr, "    -n --number=<int>    number of blocks to transfer (-1 = infinite).\n");
 	fprintf(stderr, "    -h --help            this screen.\n");
@@ -51,6 +52,7 @@ int main (int argc, char * argv[])
 
 	static struct option options[] = {
 		{"device",    required_argument, NULL,  'd' },
+		{"speed",     required_argument, NULL,  's' },
 		{"blocksize", required_argument, NULL,  'b' },
 		{"number",    required_argument, NULL,  'n' },
 		{"help",      no_argument,       NULL,  'h' },
@@ -66,7 +68,8 @@ int main (int argc, char * argv[])
 	int           blocknumber = -1;
 	int           offset      =  0;
 	int           nb          =  0;
-
+	int           speed       = -1;
+	int           orig_speed  = -1;
 
 	struct spi_ioc_transfer transfer = {
 		.tx_buf        = 0,
@@ -77,8 +80,7 @@ int main (int argc, char * argv[])
 		.bits_per_word = 0,
 	};
 
-
-	while ((opt = getopt_long(argc, argv, "d:b:n:rhv", options, &long_index)) >= 0) {
+	while ((opt = getopt_long(argc, argv, "d:s:b:n:rhv", options, &long_index)) >= 0) {
 		switch(opt) {
 			case 'h':
 				display_usage(argv[0]);
@@ -96,7 +98,13 @@ int main (int argc, char * argv[])
 					exit(EXIT_FAILURE);
 				}
 				break;
-
+			case 's':
+				if ((sscanf(optarg, "%d", & speed) != 1)
+				 || (speed < 10) || (speed > 100000000)) {
+					fprintf(stderr, "%s: Invalid speed\n", argv[0]);
+					exit(EXIT_FAILURE);
+				}
+				break;
 			case 'n':
 				if ((sscanf(optarg, "%d", & blocknumber) != 1)
 				 || (blocknumber < -1)) {
@@ -136,6 +144,18 @@ int main (int argc, char * argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	if (speed != -1) {
+		if (ioctl(fd, SPI_IOC_RD_MAX_SPEED_HZ, & orig_speed) < 0) {
+			perror("SPI_IOC_RD_MAX_SPEED_HZ");
+			exit(EXIT_FAILURE);
+		}
+
+		if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, & speed) < 0) {
+			perror("SPI_IOC_WR_MAX_SPEED_HZ");
+			exit(EXIT_FAILURE);
+		}
+	}
+
 	while ((blocknumber > 0) || (blocknumber == -1)) {
 		for (offset = 0; offset < blocksize; offset += nb) {
 			nb = read(STDIN_FILENO, & (tx_buffer[offset]), blocksize - offset);
@@ -154,6 +174,14 @@ int main (int argc, char * argv[])
 		if (blocknumber > 0)
 			blocknumber --;
 	}
+
+	if (orig_speed != -1) {
+		if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, & orig_speed) < 0) {
+			perror("SPI_IOC_WR_MAX_SPEED_HZ");
+			exit(EXIT_FAILURE);
+		}
+	}
+
 	free(rx_buffer);
 	free(tx_buffer);
 	if (blocknumber != 0)
