@@ -56,10 +56,12 @@ static void display_usage(const char * name)
 	fprintf(stderr, "    -b --bits=[7...]   bits per word.\n");
 	fprintf(stderr, "    -s --speed=<int>   set the speed in Hz.\n");
 	fprintf(stderr, "    -r --spirdy={0,1}  consider SPI_RDY signal (1) or ignore it (0).\n");
+	fprintf(stderr, "    -w --wait          block keeping the file descriptor open to avoid speed reset.\n");
 	fprintf(stderr, "    -h --help          this screen.\n");
 	fprintf(stderr, "    -v --version       display the version number.\n");
 
 }
+
 
 int main (int argc, char * argv[])
 {
@@ -71,6 +73,7 @@ int main (int argc, char * argv[])
 		{"query",    no_argument,       NULL,  'q' },
 		{"help",     no_argument,       NULL,  'h' },
 		{"version",  no_argument,       NULL,  'v' },
+		{"wait",     no_argument,       NULL,  'w' },
 		{"mode",     required_argument, NULL,  'm' },
 		{"lsb",      required_argument, NULL,  'l' },
 		{"bits",     required_argument, NULL,  'b' },
@@ -87,8 +90,9 @@ int main (int argc, char * argv[])
 	uint8_t       byte;
 	uint32_t      u32;
 	int           query_only = 0;
+	int           wait = 0;
 
-	while ((opt = getopt_long(argc, argv, "d:qhvm:l:b:s:r:", options, &long_index)) >= 0) {
+	while ((opt = getopt_long(argc, argv, "d:qhvwm:l:b:s:r:", options, &long_index)) >= 0) {
 		switch(opt) {
 			case 'q':
 				query_only = 1;
@@ -102,7 +106,9 @@ int main (int argc, char * argv[])
 			case 'd':
 				device = optarg;
 				break;
-
+			case 'w':
+				wait = 1;
+				break;
 			case 'm':
 				if ((sscanf(optarg, "%d", & val) != 1)
 				 || (val < 0) || (val > 3)) {
@@ -152,7 +158,7 @@ int main (int argc, char * argv[])
 			default:
 				fprintf(stderr, "%s: wrong option. Use -h for help.\n", argv[0]);
 				exit(EXIT_FAILURE);
-		}				
+		}
 	}
 
 	if (device == NULL) {
@@ -238,7 +244,9 @@ int main (int argc, char * argv[])
 			exit(EXIT_FAILURE);
 		}
 	}
-
+	if (wait)
+		for (;;)
+			pause();
 	return EXIT_SUCCESS;
 }
 

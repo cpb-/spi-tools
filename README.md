@@ -43,6 +43,7 @@ Usage
 * `-b --bits=[7...]`   bits per word.
 * `-r --spirdy={0,1}`   set the SPI_READY spi mode flag.
 * `-s --speed=<int>`   set the speed in Hz.
+* `-w --wait`          block, keeping the file descriptor open.
 * `-h --help`          help screen.
 * `-v --version`       display the version number.
 
@@ -61,6 +62,20 @@ $ spi-config -d /dev/spidev0.0 -s 10000000
 $ spi-config -d /dev/spidev0.0 -q
 /dev/spidev0.0: mode=0, lsb=0, bits=8, speed=10000000
 $
+```
+
+Note: on some platforms, the speed is reset to a default value when the file descriptor is closed.
+To avoid this, one can use the `-w` option that keep the file descriptor open. For example:
+
+```
+$ spi-config -d /dev/spidev0.0 -s 10000000 -w &
+$ PID=$!
+```
+
+And when you don't need the SPI device anymore:
+
+```
+$ kill $PID
 ```
 
 ### spi-pipe usage
