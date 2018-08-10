@@ -66,8 +66,8 @@ if test x"$debugit" = x"yes"; then
     AC_MSG_NOTICE([Debug Mode on.])
 else
     AC_DEFINE([NDEBUG],[],[No-debug Mode])
-    AM_CFLAGS="$AM_CFLAGS -O0"
-    AM_CXXFLAGS="$AM_CXXFLAGS -O0"
+    AM_CFLAGS="-O0 $AM_CFLAGS"
+    AM_CXXFLAGS="-O0 $AM_CXXFLAGS"
     AC_MSG_NOTICE([Debug Mode off.])
 fi
 
