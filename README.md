@@ -81,7 +81,7 @@ $ kill $PID
 ### spi-pipe usage
 #### Options
 * `-d --device=<dev>`    use the given spi-dev character device.
-* `-s --speed=<speed>   Maximum SPI clock rate (in Hz).
+* `-s --speed=<speed>`   Maximum SPI clock rate (in Hz).
 * `-b --blocksize=<int>` transfer block size in byte.
 * `-n --number=<int>`    number of blocks to transfer.
 * `-h --help`            help screen.
