@@ -41,8 +41,8 @@ Usage
 * `-m --mode=[0-3]`    use the selected spi mode.
 * `-l --lsb={0,1}`     LSB first (1) or MSB first (0).
 * `-b --bits=[7...]`   bits per word.
-* `-r --spirdy={0,1}`   set the SPI_READY spi mode flag.
 * `-s --speed=<int>`   set the speed in Hz.
+* `-r --spirdy={0,1}`   set the SPI_READY spi mode flag.
 * `-w --wait`          block, keeping the file descriptor open.
 * `-h --help`          help screen.
 * `-v --version`       display the version number.
@@ -81,6 +81,7 @@ $ kill $PID
 ### spi-pipe usage
 #### Options
 * `-d --device=<dev>`    use the given spi-dev character device.
+* `-s --speed=<speed>   Maximum SPI clock rate (in Hz).
 * `-b --blocksize=<int>` transfer block size in byte.
 * `-n --number=<int>`    number of blocks to transfer.
 * `-h --help`            help screen.
