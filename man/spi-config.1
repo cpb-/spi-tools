@@ -26,6 +26,12 @@ set the number of bits per word.
 \fB\-s\fR, \fB\-\-speed\fR=\fIFREQUENCY\fR
 set clock frequency (in Hz).
 .TP
+\fB\-r\fR, \fB\-\-spirdy\fR=\fI{0,1}\fR
+set the SPI READY mode flag.
+.TP
+\fB\-s\fR, \fB\-\-wait
+block, keeping the file descriptor open. See \fBWAIT OPTION\fR below.
+.TP
 \fB\-h\fR, \fB\-\-help\fR
 display the help screen and exit.
 .TP
@@ -45,6 +51,11 @@ high iddle level, sample on leading edge.
 .TP
 mode 3
 high iddle level, sample on trailing edge.
+
+.SS "WAIT OPTION"
+On some platforms, the speed is reset to a default value when the file descriptor is closed.
+To avoid this, one can use the \fB\-w\fR option that keeps the file descriptor open. See also
+last example below.
 .SH EXAMPLES
 .TP
 Get help:
@@ -55,6 +66,12 @@ $ \fBspi\-config \-\-device=/dev/spidev0.0 \-q\fR
 .TP
 Change clock frequency to 1 MHz:
 $ \fBspi\-config \-\-device=/dev/spidev0.0 \-\-speed=1000000\fR
+.TP
+Set a configuration and keep the device open:
+$ \fBspi\-config \-\-wait \-\-speed=1000000\fR & PID=$!
+.TP
+Close device previously open:
+$ \fBkill\fP $PID
 .SH AUTHOR
 Written by Christophe BLAESS <http://www.blaess.fr/christophe>.
 .SH "REPORTING BUGS"
