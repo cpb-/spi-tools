@@ -116,7 +116,7 @@ int main (int argc, char * argv[])
 			default:
 				fprintf(stderr, "%s: wrong option. Use -h for help.\n", argv[0]);
 				exit(EXIT_FAILURE);
-		}				
+		}
 	}
 
 	if (((rx_buffer = malloc(blocksize)) == NULL)
@@ -162,14 +162,15 @@ int main (int argc, char * argv[])
 			if (nb <= 0)
 				break;
 		}
-		if (nb <= 0)
+		if ((nb <= 0) && (offset == 0))
 			break;
 
+		transfer.len == offset;
 		if (ioctl(fd, SPI_IOC_MESSAGE(1), & transfer) < 0) {
 			perror("SPI_IOC_MESSAGE");
 			break;
 		}
-		if (write(STDOUT_FILENO, rx_buffer, blocksize) <= 0)
+		if (write(STDOUT_FILENO, rx_buffer, offset) <= 0)
 			break;
 		if (blocknumber > 0)
 			blocknumber --;
