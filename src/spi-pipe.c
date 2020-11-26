@@ -165,7 +165,7 @@ int main (int argc, char * argv[])
 		if ((nb <= 0) && (offset == 0))
 			break;
 
-		transfer.len == offset;
+		transfer.len = offset;
 		if (ioctl(fd, SPI_IOC_MESSAGE(1), & transfer) < 0) {
 			perror("SPI_IOC_MESSAGE");
 			break;
