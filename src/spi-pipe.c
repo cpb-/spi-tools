@@ -93,7 +93,7 @@ int main (int argc, char * argv[])
 				break;
 			case 'b':
 				if ((sscanf(optarg, "%d", & blocksize) != 1)
-				 || (blocksize <= 0) || (blocksize > 16384)) {
+				 || (blocksize <= 0)) {
 					fprintf(stderr, "%s: wrong blocksize\n", argv[0]);
 					exit(EXIT_FAILURE);
 				}
