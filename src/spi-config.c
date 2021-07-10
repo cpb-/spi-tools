@@ -20,24 +20,14 @@
 
 #include <fcntl.h>
 #include <getopt.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <linux/spi/spidev.h>
-#include <sys/ioctl.h>
 #include "config.h"
 
-static char * project = "spi-config";
+#include "spi-tools.h"
 
-
-typedef struct spi_config {
-	int        mode;  // [0-3]  (-1 when not configured).
-	int        lsb;   // {0,1}  (-1 when not configured).
-	int        bits;  // [7...] (-1 when not configured).
-	uint32_t   speed; // 0 when not configured.
-	int        spiready;   // {0,1}  (-1 when not configured).
-} spi_config_t;
+static char *project = "spi-config";
 
 
 
@@ -82,15 +72,19 @@ int main (int argc, char * argv[])
 		{0,         0,                 0,  0 }
 	};
 
-	spi_config_t  new_config = { -1, -1, -1, 0, -1 };
-	spi_config_t  config;
 	char *        device = NULL;
+	spi_config_t  new_config;
+	spi_config_t  config;
 	int           fd;
 	int           val;
-	uint8_t       byte;
-	uint32_t      u32;
 	int           query_only = 0;
 	int           wait = 0;
+
+	new_config.spi_mode = -1;
+	new_config.lsb_first = -1;
+	new_config.bits_per_word = -1;
+	new_config.spi_speed = -1;
+	new_config.spi_ready = -1;
 
 	while ((opt = getopt_long(argc, argv, "d:qhvwm:l:b:s:r:", options, &long_index)) >= 0) {
 		switch(opt) {
@@ -110,49 +104,32 @@ int main (int argc, char * argv[])
 				wait = 1;
 				break;
 			case 'm':
-				if ((sscanf(optarg, "%d", & val) != 1)
-				 || (val < 0) || (val > 3)) {
-					fprintf(stderr, "%s: wrong SPI mode ([0-3])\n", argv[0]);
+				if (Parse_spi_mode(optarg, &new_config) != 0)
 					exit(EXIT_FAILURE);
-				}
-				new_config.mode = val;
 				break;
 
 			case 'l':
-				if ((sscanf(optarg, "%d", & val) != 1)
-				 || (val < 0) || (val > 1)) {
-					fprintf(stderr, "%s: wrong LSB first value ([0,1])\n", argv[0]);
+				if (Parse_lsb_first(optarg, &new_config) != 0)
 					exit(EXIT_FAILURE);
-				}
-				new_config.lsb = val;
 				break;
 
 			case 'b':
-				if ((sscanf(optarg, "%d", & val) != 1)
+				if ((sscanf(optarg, "%d", &val) != 1)
 				 || (val < 7)) {
 					fprintf(stderr, "%s: wrong bits per word value [7...]\n", argv[0]);
 					exit(EXIT_FAILURE);
 				}
-				new_config.bits = val;
+				new_config.bits_per_word = val;
 				break;
 
 			case 's':
-				if ((sscanf(optarg, "%d", & val) != 1)
-				 || (val < 10)
-				 || (val > 100000000)) {
-					fprintf(stderr, "%s: wrong speed value (Hz)\n", argv[0]);
+				if (Parse_spi_speed(optarg, &new_config) != 0)
 					exit(EXIT_FAILURE);
-				}
-				new_config.speed = val;
 				break;
 
 			case 'r':
-				if ((sscanf(optarg, "%d", & val) != 1)
-				 || (val < 0) || (val > 1)) {
-					fprintf(stderr, "%s: wrong SPI_RDY value ([0,1])\n", argv[0]);
+				if (Parse_spi_ready(optarg, &new_config) != 0)
 					exit(EXIT_FAILURE);
-				}
-				new_config.spiready = val;
 				break;
 
 			default:
@@ -172,81 +149,38 @@ int main (int argc, char * argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	// Read the previous configuration.
-	if (ioctl(fd, SPI_IOC_RD_MODE, & byte) < 0) {
-		perror("SPI_IOC_RD_MODE");
+	if (Read_spi_configuration(fd, &config) != 0)
 		exit(EXIT_FAILURE);
-	}
-	config.mode = byte;
-	config.spiready = ((config.mode & SPI_READY) ? 1 : 0);
-	// clear the upper flag bits to be left with mode number
-	config.mode &= 0x3;
-	if (ioctl(fd, SPI_IOC_RD_LSB_FIRST, & byte) < 0) {
-		perror("SPI_IOC_RD_LSB_FIRST");
-		exit(EXIT_FAILURE);
-	}
-	config.lsb = (byte == SPI_LSB_FIRST ? 1 : 0);
-	if (ioctl(fd, SPI_IOC_RD_BITS_PER_WORD, & byte) < 0) {
-		perror("SPI_IOC_RD_BITS_PER_WORD");
-		exit(EXIT_FAILURE);
-	}
-	config.bits = (byte == 0 ? 8 : byte);
-	if (ioctl(fd, SPI_IOC_RD_MAX_SPEED_HZ, & u32) < 0) {
-		perror("SPI_IOC_RD_MAX_SPEED_HZ");
-		exit(EXIT_FAILURE);
-	}
-	config.speed = u32;
 
 	if (query_only) {
 		fprintf(stdout, "%s: mode=%d, lsb=%d, bits=%d, speed=%d, spiready=%d\n",
-		        device, config.mode, config.lsb, config.bits, config.speed, config.spiready);
+		        device, config.spi_mode, config.lsb_first, config.bits_per_word,
+		        config.spi_speed, config.spi_ready);
 		exit(EXIT_SUCCESS);
 	}
 
-	// Set the new configuration.
-	if ((config.spiready != new_config.spiready) && (new_config.spiready == 1)) {
-		new_config.mode |= SPI_READY;
-	}
-	if ((config.mode != new_config.mode) || (config.spiready != new_config.spiready)) {
-		// In case only the spiready flag was changed
-		if (new_config.mode == -1) {
-			new_config.mode = config.mode;
-		}
-		if (new_config.spiready == 1) {
-			new_config.mode |= SPI_READY;
-		}
-		byte = new_config.mode;
-		if (ioctl(fd, SPI_IOC_WR_MODE, & byte) < 0) {
-			perror("SPI_IOC_WR_MODE");
-			exit(EXIT_FAILURE);
-		}
-	}
-	if ((config.lsb != new_config.lsb) && (new_config.lsb != -1)) {
-		byte = (new_config.lsb ? SPI_LSB_FIRST : 0);
-		if (ioctl(fd, SPI_IOC_WR_LSB_FIRST, & byte) < 0) {
-			perror("SPI_IOC_WR_LSB_FIRST");
-			exit(EXIT_FAILURE);
-		}
-	}
-	if ((config.bits != new_config.bits) && (new_config.bits != -1)) {
-		byte = new_config.bits;
-		if (ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, & byte) < 0) {
-			fprintf(stderr, "Unable to set bits to %d\n", byte);
-			perror("SPI_IOC_WR_BITS_PER_WORD");
-			exit(EXIT_FAILURE);
-		}
-	}
-	if ((config.speed != new_config.speed) && (new_config.speed != 0)) {
-		u32 = new_config.speed;
-		if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, & u32) < 0) {
-			perror("SPI_IOC_WR_MAX_SPEED_HZ");
-			fprintf(stderr, "Failed to set speed to %d\n", u32);
-			exit(EXIT_FAILURE);
-		}
-	}
+	if (new_config.spi_mode == -1)
+		new_config.spi_mode = config.spi_mode;
+
+	if (new_config.lsb_first == -1)
+		new_config.lsb_first = config.lsb_first;
+
+	if (new_config.bits_per_word == -1)
+		new_config.bits_per_word = config.bits_per_word;
+
+	if (new_config.spi_speed == -1)
+		new_config.spi_speed = config.spi_speed;
+
+	if (new_config.spi_ready == -1)
+		new_config.spi_ready = config.spi_ready;
+
+	if (Write_spi_configuration(fd, &new_config) != 0)
+		exit(EXIT_FAILURE);
+
 	if (wait)
 		for (;;)
 			pause();
+
 	return EXIT_SUCCESS;
 }
 

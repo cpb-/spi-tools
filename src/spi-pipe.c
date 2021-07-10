@@ -25,10 +25,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <linux/ioctl.h>
-#include <linux/spi/spidev.h>
-#include <sys/ioctl.h>
 #include "config.h"
+#include "spi-tools.h"
 
 static char *project = "spi-pipe";
 
@@ -44,12 +42,16 @@ static void display_usage(const char *name)
 	fprintf(stderr, "             2: high idle level, sample on leading edge,\n");
 	fprintf(stderr, "             3: high idle level, sample on trailing edge.\n");
 	fprintf(stderr, "    -s --speed=<speed>   Maximum SPI clock rate (in Hz).\n");
+	fprintf(stderr, "    -l --lsb={0,1}     LSB first (1) or MSB first (0).\n");
 	fprintf(stderr, "    -B --bits=[7...]     Bits per word.\n");
 	fprintf(stderr, "    -b --blocksize=<int> transfer block size in byte.\n");
 	fprintf(stderr, "    -n --number=<int>    number of blocks to transfer (-1 = infinite).\n");
 	fprintf(stderr, "    -h --help            this screen.\n");
 	fprintf(stderr, "    -v --version         display the version number.\n");
 }
+
+
+
 
 int main (int argc, char *argv[])
 {
@@ -61,6 +63,7 @@ int main (int argc, char *argv[])
 		{"speed",     required_argument, NULL,  's' },
 		{"blocksize", required_argument, NULL,  'b' },
 		{"number",    required_argument, NULL,  'n' },
+		{"lsb",       required_argument, NULL,  'l' },
 		{"mode",      required_argument, NULL,  'm' },
 		{"bits",      required_argument, NULL,  'B' },
 		{"help",      no_argument,       NULL,  'h' },
@@ -72,25 +75,22 @@ int main (int argc, char *argv[])
 	char *device = NULL;
 	uint8_t *rx_buffer = NULL;
 	uint8_t *tx_buffer = NULL;
-	int spi_mode      = -1;
-	int block_size    =  1;
+	spi_config_t prev_config;
+	spi_config_t new_config;
+
+	int block_size    = -1;
 	int blocks_count  = -1;
-	int bits_per_word = -1;
 	int offset        =  0;
 	int nb            =  0;
-	int speed         = -1;
-	int orig_speed    = -1;
 
-	struct spi_ioc_transfer transfer = {
-		.tx_buf        = 0,
-		.rx_buf        = 0,
-		.len           = 0,
-		.delay_usecs   = 0,
-		.speed_hz      = 0,
-		.bits_per_word = 0,
-	};
+	new_config.spi_mode = -1;
+	new_config.lsb_first = -1;
+	new_config.bits_per_word = -1;
+	new_config.spi_speed = -1;
+	new_config.spi_ready = -1;
 
-	while ((opt = getopt_long(argc, argv, "d:s:b:m:n:B:rhv", options, &long_index)) >= 0) {
+
+	while ((opt = getopt_long(argc, argv, "d:s:b:l:m:n:B:rhv", options, &long_index)) >= 0) {
 		switch(opt) {
 			case 'h':
 				display_usage(argv[0]);
@@ -105,33 +105,34 @@ int main (int argc, char *argv[])
 				break;
 
 			case 'm':
-				if ((sscanf(optarg, "%d", &spi_mode) != 1)
-				 || (spi_mode < 0) || (spi_mode > 3)) {
-					fprintf(stderr, "%s: wrong SPI mode ([0-3])\n", argv[0]);
+				if (Parse_spi_mode(optarg, &new_config) != 0)
 					exit(EXIT_FAILURE);
-				}
+				break;
+
+			case 'l':
+				if (Parse_lsb_first(optarg, &new_config) != 0)
+					exit(EXIT_FAILURE);
+				break;
+
+			case 's':
+				if (Parse_spi_speed(optarg, &new_config) != 0)
+					exit(EXIT_FAILURE);
+				break;
+
+			case 'r':
+				if (Parse_spi_ready(optarg, &new_config) != 0)
+					exit(EXIT_FAILURE);
+				break;
+
+			case 'B':
+				if (Parse_spi_bits_per_word(optarg, &new_config) != 0)
+					exit(EXIT_FAILURE);
 				break;
 
 			case 'b':
 				if ((sscanf(optarg, "%d", &block_size) != 1)
 				 || (block_size <= 0)) {
 					fprintf(stderr, "%s: wrong blocksize\n", argv[0]);
-					exit(EXIT_FAILURE);
-				}
-				break;
-
-			case 's':
-				if ((sscanf(optarg, "%d", &speed) != 1)
-				 || (speed < 10) || (speed > 100000000)) {
-					fprintf(stderr, "%s: Invalid speed\n", argv[0]);
-					exit(EXIT_FAILURE);
-				}
-				break;
-
-			case 'B':
-				if ((sscanf(optarg, "%d", &bits_per_word) != 1)
-				 || (bits_per_word < 7)) {
-					fprintf(stderr, "%s: wrong bits per word value [7...]\n", argv[0]);
 					exit(EXIT_FAILURE);
 				}
 				break;
@@ -160,10 +161,6 @@ int main (int argc, char *argv[])
 	memset(rx_buffer, 0, block_size);
 	memset(tx_buffer, 0, block_size);
 
-	transfer.rx_buf = (unsigned long)rx_buffer;
-	transfer.tx_buf = (unsigned long)tx_buffer;
-	transfer.len = block_size;
-
 	if (device == NULL) {
 		fprintf(stderr, "%s: no device specified (use option -h for help).\n", argv[0]);
 		exit(EXIT_FAILURE);
@@ -175,32 +172,26 @@ int main (int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	if (speed != -1) {
-		if (ioctl(fd, SPI_IOC_RD_MAX_SPEED_HZ, &orig_speed) < 0) {
-			perror("SPI_IOC_RD_MAX_SPEED_HZ");
-			exit(EXIT_FAILURE);
-		}
+	if (Read_spi_configuration(fd, &prev_config) != 0)
+		exit(EXIT_FAILURE);
 
-		if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed) < 0) {
-			perror("SPI_IOC_WR_MAX_SPEED_HZ");
-			exit(EXIT_FAILURE);
-		}
-	}
+	if (new_config.spi_mode == -1)
+		new_config.spi_mode = prev_config.spi_mode;
 
-	if (spi_mode != -1) {
-		if (ioctl(fd, SPI_IOC_WR_MODE, &spi_mode) < 0) {
-			perror("SPI_IOC_WR_MODE");
-			exit(EXIT_FAILURE);
-		}
-	}
+	if (new_config.lsb_first == -1)
+		new_config.lsb_first = prev_config.lsb_first;
 
-	if (bits_per_word != -1) {
-		if (ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &bits_per_word) < 0) {
-			fprintf(stderr, "Unable to set bits to %d\n", bits_per_word);
-			perror("SPI_IOC_WR_BITS_PER_WORD");
-			exit(EXIT_FAILURE);
-		}
-	}
+	if (new_config.bits_per_word == -1)
+		new_config.bits_per_word = prev_config.bits_per_word;
+
+	if (new_config.spi_speed == -1)
+		new_config.spi_speed = prev_config.spi_speed;
+
+	if (new_config.spi_ready == -1)
+		new_config.spi_ready = prev_config.spi_ready;
+
+	if (Write_spi_configuration(fd, &new_config) != 0)
+		exit(EXIT_FAILURE);
 
 	while ((blocks_count > 0) || (blocks_count == -1)) {
 		for (offset = 0; offset < block_size; offset += nb) {
@@ -211,8 +202,7 @@ int main (int argc, char *argv[])
 		if ((nb <= 0) && (offset == 0))
 			break;
 
-		transfer.len = offset;
-		if (ioctl(fd, SPI_IOC_MESSAGE(1), & transfer) < 0) {
+		if (Transfer_spi_buffers(fd, tx_buffer, rx_buffer, offset) != 0) {
 			perror("SPI_IOC_MESSAGE");
 			break;
 		}
@@ -222,19 +212,14 @@ int main (int argc, char *argv[])
 			blocks_count --;
 	}
 
-	if (orig_speed != -1) {
-		if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &orig_speed) < 0) {
-			perror("SPI_IOC_WR_MAX_SPEED_HZ");
-			exit(EXIT_FAILURE);
-		}
-	}
-
 	free(rx_buffer);
 	free(tx_buffer);
+
+	if (Write_spi_configuration(fd, &prev_config) != 0)
+		exit(EXIT_FAILURE);
 
 	if (blocks_count != 0)
 		return EXIT_FAILURE;
 
 	return EXIT_SUCCESS;
 }
-
