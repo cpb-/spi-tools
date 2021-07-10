@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.60])
-AC_INIT(spi-tools, 0.8.7, Christophe Blaess)
+AC_INIT(spi-tools, 1.0.0, Christophe Blaess)
 
 AM_INIT_AUTOMAKE([foreign])
 AM_MAINTAINER_MODE([disable])

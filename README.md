@@ -2,6 +2,8 @@
 
 This package contains some simple command line tools to help using Linux spidev devices.
 
+Version 1.0.0
+
 ## Content
 
 ### `spi-config`
