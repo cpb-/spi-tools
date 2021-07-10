@@ -1,41 +1,50 @@
-spi-tools
-=========
+# spi-tools
 
 This package contains some simple command line tools to help using Linux spidev devices.
 
-Content
--------
+## Content
 
 ### `spi-config`
+
 Query or set the SPI configuration (mode, speed, bits per word, etc.)
 
 ### `spi-pipe`
+
 Send and receive data simultaneously to and from a SPI device.
 
-License
--------
+## License
+
 The tools are released under the GPLv2 license. See `LICENSE` file for details.
 
-Author
-------
+## Author
+
 Christophe Blaess
 http://www.blaess.fr/christophe
 
-Installation
-------------
-First, get the latest version on https://github.com/cpb-/spi-tools.git
+## Installation
 
-    # autoreconf -fim
-    # ./configure
+First, get the latest version on https://github.com/cpb-/spi-tools.git.
+Then enter the directory and execute:
 
-Simply do a `make` to build the tools, then `make install` to install them and the man pages.
-If you have to use a cross-compilation toolchain, simply fill the `CROSS_COMPILE` environment variable with the cross-compiler prefix.
-You can use `make uninstall` to remove the installed files.
+```
+$ autoreconf -fim
+$ ./configure
+$ make
+```
 
-Usage
------
+Then you can run `make install` (probably with `sudo`) to install them and the man pages.
+
+If you have to use a cross-compilation toolchain,
+simply fill the `CROSS_COMPILE` environment variable with the cross-compiler prefix.
+
+You can use `make uninstall` (with `sudo`) to remove the installed files.
+
+## Usage
+
 ### spi-config usage
+
 #### options
+
 * `-d --device=<dev>`  use the given spi-dev character device.
 * `-q --query`         print the current configuration.
 * `-m --mode=[0-3]`    use the selected spi mode.
@@ -79,15 +88,22 @@ $ kill $PID
 ```
 
 ### spi-pipe usage
+
 #### Options
+
 * `-d --device=<dev>`    use the given spi-dev character device.
+* `-m --mode=[0-3]`      use the selected spi mode.
 * `-s --speed=<speed>`   Maximum SPI clock rate (in Hz).
+* `-l --lsb={0,1}`       LSB first (1) or MSB first (0).
+* `-B --bits=[7...]`     bits per word.
+* `-r --spirdy={0,1}`    set the SPI_READY spi mode flag.
 * `-b --blocksize=<int>` transfer block size in byte.
 * `-n --number=<int>`    number of blocks to transfer.
 * `-h --help`            help screen.
 * `-v --version`         display the version number.
 
 #### Send and receive simultaneously
+
 Sending data from `command-1` to SPI link and receiving data from SPI link to `command-2`
 
 ```
@@ -96,7 +112,7 @@ $ command_1 | spi-pipe -d /dev/spidev0.0 | command_2
 
 Note that `command_1`, `command_2` and `spi-pipe` run simultaneously in three parallel processes.
 
-#### Send data to the SPI link
+#### Send data through the SPI link
 
 ```
 $ command_1 | spi-pipe -d /dev/spidev0.0
@@ -111,8 +127,18 @@ $ spi-pipe -d /dev/spidev0.0 < /dev/zero | command_2
 You can also use `command_2 < /dev/spidev0.0` but with `spi-pipe` you control what is sent to the device (always `0` in this case).
 
 #### Read 40 blocks of 4 bytes from the SPI link
+
 ```
 $ spi-pipe -d /dev/spidev0.0 -b 4 -n 40 < /dev/zero | command_2
 ```
 
+#### Send binary commands through the SPI link
+
+You can use the shell `printf` command to format binary data to send.
+
+For example, to send the bytes sequence 0x01-0x82-0xF3 and see the reply, use:
+
+```
+$ printf '\x01\x82\F3' | spi-pipe -d /dev/spidev0.0 | hexdump -C
+```
 
