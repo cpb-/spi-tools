@@ -30,22 +30,23 @@
 #include <sys/ioctl.h>
 #include "config.h"
 
-static char * project = "spi-pipe";
+static char *project = "spi-pipe";
 
 
-static void display_usage(const char * name)
+static void display_usage(const char *name)
 {
 	fprintf(stderr, "usage: %s options...\n", name);
 	fprintf(stderr, "  options:\n");
 	fprintf(stderr, "    -d --device=<dev>    use the given spi-dev character device.\n");
 	fprintf(stderr, "    -s --speed=<speed>   Maximum SPI clock rate (in Hz).\n");
+	fprintf(stderr, "    -B --bits=[7...]     Bits per word.\n");
 	fprintf(stderr, "    -b --blocksize=<int> transfer block size in byte.\n");
 	fprintf(stderr, "    -n --number=<int>    number of blocks to transfer (-1 = infinite).\n");
 	fprintf(stderr, "    -h --help            this screen.\n");
 	fprintf(stderr, "    -v --version         display the version number.\n");
 }
 
-int main (int argc, char * argv[])
+int main (int argc, char *argv[])
 {
 	int opt;
 	int long_index = 0;
@@ -55,21 +56,23 @@ int main (int argc, char * argv[])
 		{"speed",     required_argument, NULL,  's' },
 		{"blocksize", required_argument, NULL,  'b' },
 		{"number",    required_argument, NULL,  'n' },
+		{"bits",      required_argument, NULL,  'B' },
 		{"help",      no_argument,       NULL,  'h' },
 		{"version",   no_argument,       NULL,  'v' },
 		{0,           0,                 0,  0 }
 	};
 
-	int           fd;
-	char *        device      = NULL;
-	uint8_t     * rx_buffer   =  NULL;
-	uint8_t     * tx_buffer   =  NULL;
-	int           blocksize   =  1;
-	int           blocknumber = -1;
-	int           offset      =  0;
-	int           nb          =  0;
-	int           speed       = -1;
-	int           orig_speed  = -1;
+	int fd;
+	char *device = NULL;
+	uint8_t *rx_buffer = NULL;
+	uint8_t *tx_buffer = NULL;
+	int blocksize   =  1;
+	int blocknumber = -1;
+	int bitsperword = -1;
+	int offset      =  0;
+	int nb          =  0;
+	int speed       = -1;
+	int orig_speed  = -1;
 
 	struct spi_ioc_transfer transfer = {
 		.tx_buf        = 0,
@@ -80,33 +83,46 @@ int main (int argc, char * argv[])
 		.bits_per_word = 0,
 	};
 
-	while ((opt = getopt_long(argc, argv, "d:s:b:n:rhv", options, &long_index)) >= 0) {
+	while ((opt = getopt_long(argc, argv, "d:s:b:n:B:rhv", options, &long_index)) >= 0) {
 		switch(opt) {
 			case 'h':
 				display_usage(argv[0]);
 				exit(EXIT_SUCCESS);
+
 			case 'v':
 				fprintf(stderr, "%s - %s\n", project, VERSION);
 				exit(EXIT_SUCCESS);
+
 			case 'd':
 				device = optarg;
 				break;
+
 			case 'b':
-				if ((sscanf(optarg, "%d", & blocksize) != 1)
+				if ((sscanf(optarg, "%d", &blocksize) != 1)
 				 || (blocksize <= 0)) {
 					fprintf(stderr, "%s: wrong blocksize\n", argv[0]);
 					exit(EXIT_FAILURE);
 				}
 				break;
+
 			case 's':
-				if ((sscanf(optarg, "%d", & speed) != 1)
+				if ((sscanf(optarg, "%d", &speed) != 1)
 				 || (speed < 10) || (speed > 100000000)) {
 					fprintf(stderr, "%s: Invalid speed\n", argv[0]);
 					exit(EXIT_FAILURE);
 				}
 				break;
+
+			case 'B':
+				if ((sscanf(optarg, "%d", &bitsperword) != 1)
+				 || (bitsperword < 7)) {
+					fprintf(stderr, "%s: wrong bits per word value [7...]\n", argv[0]);
+					exit(EXIT_FAILURE);
+				}
+				break;
+
 			case 'n':
-				if ((sscanf(optarg, "%d", & blocknumber) != 1)
+				if ((sscanf(optarg, "%d", &blocknumber) != 1)
 				 || (blocknumber < -1)) {
 					fprintf(stderr, "%s: wrong block number\n", argv[0]);
 					exit(EXIT_FAILURE);
@@ -145,13 +161,21 @@ int main (int argc, char * argv[])
 	}
 
 	if (speed != -1) {
-		if (ioctl(fd, SPI_IOC_RD_MAX_SPEED_HZ, & orig_speed) < 0) {
+		if (ioctl(fd, SPI_IOC_RD_MAX_SPEED_HZ, &orig_speed) < 0) {
 			perror("SPI_IOC_RD_MAX_SPEED_HZ");
 			exit(EXIT_FAILURE);
 		}
 
-		if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, & speed) < 0) {
+		if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed) < 0) {
 			perror("SPI_IOC_WR_MAX_SPEED_HZ");
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	if (bitsperword != -1) {
+		if (ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &bitsperword) < 0) {
+			fprintf(stderr, "Unable to set bits to %d\n", bitsperword);
+			perror("SPI_IOC_WR_BITS_PER_WORD");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -177,7 +201,7 @@ int main (int argc, char * argv[])
 	}
 
 	if (orig_speed != -1) {
-		if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, & orig_speed) < 0) {
+		if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &orig_speed) < 0) {
 			perror("SPI_IOC_WR_MAX_SPEED_HZ");
 			exit(EXIT_FAILURE);
 		}
@@ -185,8 +209,10 @@ int main (int argc, char * argv[])
 
 	free(rx_buffer);
 	free(tx_buffer);
+
 	if (blocknumber != 0)
 		return EXIT_FAILURE;
+
 	return EXIT_SUCCESS;
 }
 
