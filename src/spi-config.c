@@ -96,6 +96,9 @@ int main (int argc, char * argv[])
 				exit(EXIT_SUCCESS);
 			case 'v':
 				fprintf(stderr, "%s - %s\n", project, VERSION);
+				fprintf(stderr, "Copyright (c) 2014-2021 Christophe Blaess. (license GPLv2)\n");
+				fprintf(stderr, "This is free software. You are free to change and redistribute it.\n");
+				fprintf(stderr, "There is NO WARRANTY, to the extent permitted by law.\n");
 				exit(EXIT_SUCCESS);
 			case 'd':
 				device = optarg;
