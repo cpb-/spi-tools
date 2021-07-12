@@ -77,7 +77,7 @@ int main (int argc, char *argv[])
 	spi_config_t prev_config;
 	spi_config_t new_config;
 
-	int block_size    = -1;
+	int block_size    =  1;
 	int blocks_count  = -1;
 	int offset        =  0;
 	int nb            =  0;
