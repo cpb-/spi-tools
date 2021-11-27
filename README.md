@@ -2,7 +2,7 @@
 
 This package contains some simple command line tools to help using Linux spidev devices.
 
-Version 1.0.0
+Version 1.0.1
 
 ## Content
 
@@ -36,8 +36,10 @@ $ make
 
 Then you can run `make install` (probably with `sudo`) to install them and the man pages.
 
-If you have to use a cross-compilation toolchain,
-simply fill the `CROSS_COMPILE` environment variable with the cross-compiler prefix.
+If you have to use a cross-compilation toolchain, add the `--host` option to
+the `./configure` command, as in `./configure --host=arm-linux`. This is the
+prefix to be inserted before all the toolchain commands (giving for example
+`arm-linux-gcc`).
 
 You can use `make uninstall` (with `sudo`) to remove the installed files.
 
@@ -143,4 +145,3 @@ For example, to send the bytes sequence 0x01-0x82-0xF3 and see the reply, use:
 ```
 $ printf '\x01\x82\F3' | spi-pipe -d /dev/spidev0.0 | hexdump -C
 ```
-
