@@ -143,5 +143,5 @@ You can use the shell `printf` command to format binary data to send.
 For example, to send the bytes sequence 0x01-0x82-0xF3 and see the reply, use:
 
 ```
-$ printf '\x01\x82\F3' | spi-pipe -d /dev/spidev0.0 | hexdump -C
+$ printf '\x01\x82\xF3' | spi-pipe -d /dev/spidev0.0 | hexdump -C
 ```
