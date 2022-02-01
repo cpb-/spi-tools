@@ -45,7 +45,7 @@ int Read_spi_configuration(int fd, spi_config_t *config)
 		perror("SPI_IOC_RD_LSB_FIRST");
 		return -1;
 	}
-	config->lsb_first = (u8 == SPI_LSB_FIRST ? 1 : 0);
+	config->lsb_first = (u8 ? 1 : 0);
 
 	if (ioctl(fd, SPI_IOC_RD_BITS_PER_WORD, &u8) < 0) {
 		perror("SPI_IOC_RD_BITS_PER_WORD");
