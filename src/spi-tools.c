@@ -77,7 +77,7 @@ int Write_spi_configuration(int fd, spi_config_t *config)
 		return -1;
 	}
 
-	u8 = (config->lsb_first ? SPI_LSB_FIRST : 0);
+	u8 = (config->lsb_first ? 1 : 0);
 	if (ioctl(fd, SPI_IOC_WR_LSB_FIRST, &u8) < 0) {
 	perror("SPI_IOC_WR_LSB_FIRST");
 	return -1;
@@ -94,7 +94,7 @@ int Write_spi_configuration(int fd, spi_config_t *config)
 		perror("SPI_IOC_WR_MAX_SPEED_HZ");
 		return -1;
 	}
-	
+
 	return 0;
 }
 
