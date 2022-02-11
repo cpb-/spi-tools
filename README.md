@@ -21,7 +21,7 @@ The tools are released under the GPLv2 license. See `LICENSE` file for details.
 ## Author
 
 Christophe Blaess
-http://www.blaess.fr/christophe
+https://www.blaess.fr/christophe
 
 ## Installation
 
