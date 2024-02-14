@@ -61,13 +61,13 @@ AC_MSG_RESULT([$debugit])
 
 if test x"$debugit" = x"yes"; then
     AC_DEFINE([DEBUG],[],[Debug Mode])
-    AM_CFLAGS="-g -Wall -Werror -Wno-uninitialized -O0"
-    AM_CXXFLAGS="-g -Wall -Werror -Wno-uninitialized -O0"
+    AM_CFLAGS="$CFLAGS -g -Wall -Werror -Wno-uninitialized -O0"
+    AM_CXXFLAGS="$CXXFLAGS -g -Wall -Werror -Wno-uninitialized -O0"
     AC_MSG_NOTICE([Debug Mode on.])
 else
     AC_DEFINE([NDEBUG],[],[No-debug Mode])
-    AM_CFLAGS="-O0 $AM_CFLAGS"
-    AM_CXXFLAGS="-O0 $AM_CXXFLAGS"
+    AM_CFLAGS="-O0 $AM_CFLAGS $CFLAGS"
+    AM_CXXFLAGS="-O0 $AM_CXXFLAGS $CXXFLAGS"
     AC_MSG_NOTICE([Debug Mode off.])
 fi
 
