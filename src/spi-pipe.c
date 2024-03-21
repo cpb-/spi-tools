@@ -192,8 +192,9 @@ int main (int argc, char *argv[])
 	if (new_config.spi_ready == -1)
 		new_config.spi_ready = prev_config.spi_ready;
 
-	if (Write_spi_configuration(fd, &new_config) != 0)
-		exit(EXIT_FAILURE);
+	if (memcmp(&prev_config, &new_config, sizeof(spi_config_t)) != 0)
+		if (Write_spi_configuration(fd, &new_config) != 0)
+			exit(EXIT_FAILURE);
 
 	while ((blocks_count > 0) || (blocks_count == -1)) {
 		for (offset = 0; offset < block_size; offset += nb) {
@@ -217,8 +218,9 @@ int main (int argc, char *argv[])
 	free(rx_buffer);
 	free(tx_buffer);
 
-	if (Write_spi_configuration(fd, &prev_config) != 0)
-		exit(EXIT_FAILURE);
+	if (memcmp(&prev_config, &new_config, sizeof(spi_config_t)) != 0)
+		if (Write_spi_configuration(fd, &prev_config) != 0)
+			exit(EXIT_FAILURE);
 
 	if (blocks_count != 0)
 		return EXIT_FAILURE;
