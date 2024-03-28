@@ -25,6 +25,10 @@ https://www.blaess.fr/christophe
 
 ## Installation
 
+There's two ways to install `spi-tools`: using Autotools or using Cmake.
+
+### Autotools
+
 First, get the latest version on https://github.com/cpb-/spi-tools.git.
 Then enter the directory and execute:
 
@@ -42,6 +46,8 @@ prefix to be inserted before all the toolchain commands (giving for example
 `arm-linux-gcc`).
 
 You can use `make uninstall` (with `sudo`) to remove the installed files.
+
+### Cmake
 
 ## Usage
 
