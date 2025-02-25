@@ -66,6 +66,10 @@ You can use `make uninstall` (with `sudo`) to remove the installed files.
 * `-h --help`          help screen.
 * `-v --version`       display the version number.
 
+* Some examples using a build folder under the source tree root:
+
+Android : `cmake -DCMAKE_TOOLCHAIN_FILE=~/Android/Sdk/ndk-bundle/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=android-21 -DANDROID_ABI=armeabi-v7a .. && make`
+
 #### Read the current configuration
 
 ```
