@@ -1,0 +1,96 @@
+# Android.bp for the spi-tools project.
+#
+# Copyright 2025  Parsa Majidi (parsa.majidi@kynetics.com)
+#
+# License  GPLv3+:  This is free software:  you are free to  change and
+# redistribute it.There is NO WARRANTY, to the extent permitted by law.
+
+// spi-tools
+
+
+genrule {
+    name: "generate_config_h",
+    srcs: [
+        "src/config.h.cmake.in"
+    ],
+    out: [
+        "config.h"
+    ],
+    cmd: "cp $(in) $(out)",
+}
+
+cc_library {
+    name: "spi-tools",
+    defaults: [
+        "spi_defaults",
+    ],
+    generated_headers: [
+        "generate_config_h",
+    ],
+    export_generated_headers: [
+        "generate_config_h",
+    ],
+}
+
+cc_defaults {
+    name: "spi_defaults",
+    device_specific: true,
+    cpp_std: "gnu++17",
+    cflags: [
+        // You may want to edit this with the version from configure.ac of
+        // the release you are using.
+        "-DGPIOD_VERSION_STR=\"unstable\"",
+    ],
+    cppflags: [
+        // Google C++ style is to not use exceptions, but this library does
+        // use them.
+        "-fexceptions",
+    ],
+    // Google C++ style is to not use runtime type information, but this
+    // library does use it.
+    rtti: true,
+}
+
+//
+// spi tools
+//
+
+phony {
+    name: "spi_tools",
+    required: [
+        "spi-config",
+	"spi-pipe",
+    ],
+}
+
+cc_binary {
+    name: "spi-config",
+    defaults: [
+        "spi_defaults",
+        "spi_tools_defaults",
+    ],
+    srcs: [
+        "src/spi-config.c",
+    ],
+}
+
+cc_binary {
+    name: "spi-pipe",
+    defaults: [
+        "spi_defaults",
+        "spi_tools_defaults",
+    ],
+    srcs: [
+        "src/spi-pipe.c",
+    ],
+}
+
+cc_defaults {
+    name: "spi_tools_defaults",
+    srcs: [
+        "src/spi-tools.c",
+    ],
+    shared_libs: [
+        "spi-tools",
+    ],
+}
