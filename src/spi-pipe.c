@@ -18,6 +18,9 @@
  *
  */
 
+// ---------------------- System headers.
+
+#include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
 #include <stdint.h>
@@ -25,33 +28,30 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+
+// ---------------------- Project headers.
+
 #include "config.h"
 #include "spi-tools.h"
 
-static char *project = "spi-pipe";
 
-static void display_usage(const char *name)
-{
-	fprintf(stderr, "usage: %s options...\n", name);
-	fprintf(stderr, "  options:\n");
-	fprintf(stderr, "    -d --device=<dev>    Use the given spi-dev character device.\n");
-	fprintf(stderr, "    -m --mode=[0-3]      Use the selected spi mode:\n");
-	fprintf(stderr, "             0: low idle level, sample on leading edge,\n");
-	fprintf(stderr, "             1: low idle level, sample on trailing edge,\n");
-	fprintf(stderr, "             2: high idle level, sample on leading edge,\n");
-	fprintf(stderr, "             3: high idle level, sample on trailing edge.\n");
-	fprintf(stderr, "    -s --speed=<speed>   Maximum SPI clock rate (in Hz).\n");
-	fprintf(stderr, "    -l --lsb={0,1}     LSB first (1) or MSB first (0).\n");
-	fprintf(stderr, "    -B --bits=[7...]     Bits per word.\n");
-	fprintf(stderr, "    -r --ready={0,1}     Spi ready mode.\n");
-	fprintf(stderr, "    -b --blocksize=<int> transfer block size in byte.\n");
-	fprintf(stderr, "    -n --number=<int>    number of blocks to transfer (-1 = infinite).\n");
-	fprintf(stderr, "    -h --help            this screen.\n");
-	fprintf(stderr, "    -v --version         display the version number.\n");
-}
+// ---------------------- Private macros declarations.
+
+// ---------------------- Private types and structures.
+
+// ---------------------- Private method declarations.
+
+static void display_usage(const char *name);
+static int full_write(int fd, const void *buffer, size_t length);
 
 
+// ---------------------- Private variables.
 
+static const char project[] = "spi-pipe";
+
+
+// ---------------------- Public methods
 
 int main (int argc, char *argv[])
 {
@@ -79,10 +79,10 @@ int main (int argc, char *argv[])
 	spi_config_t prev_config;
 	spi_config_t new_config;
 
-	int block_size    =  1;
-	int blocks_count  = -1;
-	int offset        =  0;
-	int nb            =  0;
+	size_t block_size    =  1;
+	int blocks_count     = -1;
+	size_t offset        =  0;
+	size_t nb            =  0;
 
 	new_config.spi_mode = -1;
 	new_config.lsb_first = -1;
@@ -134,11 +134,8 @@ int main (int argc, char *argv[])
 				break;
 
 			case 'b':
-				if ((sscanf(optarg, "%d", &block_size) != 1)
-				 || (block_size <= 0)) {
-					fprintf(stderr, "%s: wrong blocksize\n", argv[0]);
+				if (Parse_spi_bits_per_word(optarg, &new_config) != 0)
 					exit(EXIT_FAILURE);
-				}
 				break;
 
 			case 'n':
@@ -157,20 +154,20 @@ int main (int argc, char *argv[])
 
 	if (((rx_buffer = malloc(block_size)) == NULL)
 	 || ((tx_buffer = malloc(block_size)) == NULL)) {
-		fprintf(stderr, "%s: not enough memory to allocate two %d bytes buffers\n",
+		fprintf(stderr, "%s: not enough memory to allocate two %ld bytes buffers\n",
 		                argv[0], block_size);
 		exit(EXIT_FAILURE);
 	}
-
-	memset(rx_buffer, 0, block_size);
-	memset(tx_buffer, 0, block_size);
 
 	if (device == NULL) {
 		fprintf(stderr, "%s: no device specified (use option -h for help).\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
-	fd = open(device, O_RDONLY);
+	memset(rx_buffer, 0, block_size);
+	memset(tx_buffer, 0, block_size);
+
+	fd = open(device, O_RDWR);
 	if (fd < 0) {
 		perror(device);
 		exit(EXIT_FAILURE);
@@ -188,7 +185,7 @@ int main (int argc, char *argv[])
 	if (new_config.bits_per_word == -1)
 		new_config.bits_per_word = prev_config.bits_per_word;
 
-	if (new_config.spi_speed == -1)
+	if (new_config.spi_speed == 0)
 		new_config.spi_speed = prev_config.spi_speed;
 
 	if (new_config.spi_ready == -1)
@@ -211,8 +208,10 @@ int main (int argc, char *argv[])
 			perror("SPI_IOC_MESSAGE");
 			break;
 		}
-		if (write(STDOUT_FILENO, rx_buffer, offset) <= 0)
+		if (full_write(STDOUT_FILENO, rx_buffer, offset) < 0) {
+			perror("write");
 			break;
+		}
 		if (blocks_count > 0)
 			blocks_count --;
 	}
@@ -228,4 +227,47 @@ int main (int argc, char *argv[])
 		return EXIT_FAILURE;
 
 	return EXIT_SUCCESS;
+}
+
+
+// ---------------------- Private methods
+
+static void display_usage(const char *name)
+{
+	fprintf(stderr, "usage: %s options...\n", name);
+	fprintf(stderr, "  options:\n");
+	fprintf(stderr, "    -d --device=<dev>    Use the given spi-dev character device.\n");
+	fprintf(stderr, "    -m --mode=[0-3]      Use the selected spi mode:\n");
+	fprintf(stderr, "             0: low idle level, sample on leading edge,\n");
+	fprintf(stderr, "             1: low idle level, sample on trailing edge,\n");
+	fprintf(stderr, "             2: high idle level, sample on leading edge,\n");
+	fprintf(stderr, "             3: high idle level, sample on trailing edge.\n");
+	fprintf(stderr, "    -s --speed=<speed>   Maximum SPI clock rate (in Hz).\n");
+	fprintf(stderr, "    -l --lsb={0,1}       LSB first (1) or MSB first (0).\n");
+	fprintf(stderr, "    -B --bits=[7...]     Bits per word.\n");
+	fprintf(stderr, "    -r --ready={0,1}     Spi ready mode.\n");
+	fprintf(stderr, "    -b --blocksize=<int> Transfer block size in byte.\n");
+	fprintf(stderr, "    -n --number=<int>    Number of blocks to transfer (-1 = infinite).\n");
+	fprintf(stderr, "    -h --help            This screen.\n");
+	fprintf(stderr, "    -v --version         Display the version number.\n");
+}
+
+
+
+static int full_write(int fd, const void *buffer, size_t length)
+{
+	const uint8_t *ptr = buffer;
+	size_t done = 0;
+
+	while (done < length) {
+		ssize_t n = write(fd, ptr + done, length - done);
+		if (n > 0) {
+			done += (size_t)n;
+			continue;
+		}
+		if ((n < 0) && (errno == EINTR))
+			continue;
+		return -1;
+	}
+	return 0;
 }
