@@ -43,6 +43,7 @@ static void display_usage(const char *name)
 	fprintf(stderr, "    -s --speed=<speed>   Maximum SPI clock rate (in Hz).\n");
 	fprintf(stderr, "    -l --lsb={0,1}     LSB first (1) or MSB first (0).\n");
 	fprintf(stderr, "    -B --bits=[7...]     Bits per word.\n");
+	fprintf(stderr, "    -r --ready={0,1}     Spi ready mode.\n");
 	fprintf(stderr, "    -b --blocksize=<int> transfer block size in byte.\n");
 	fprintf(stderr, "    -n --number=<int>    number of blocks to transfer (-1 = infinite).\n");
 	fprintf(stderr, "    -h --help            this screen.\n");
@@ -65,6 +66,7 @@ int main (int argc, char *argv[])
 		{"lsb",       required_argument, NULL,  'l' },
 		{"mode",      required_argument, NULL,  'm' },
 		{"bits",      required_argument, NULL,  'B' },
+		{"ready",     required_argument, NULL,  'r' },
 		{"help",      no_argument,       NULL,  'h' },
 		{"version",   no_argument,       NULL,  'v' },
 		{0,           0,                 0,  0 }
@@ -89,7 +91,7 @@ int main (int argc, char *argv[])
 	new_config.spi_ready = -1;
 
 
-	while ((opt = getopt_long(argc, argv, "d:s:b:l:m:n:B:rhv", options, &long_index)) >= 0) {
+	while ((opt = getopt_long(argc, argv, "d:s:b:l:m:n:B:r:hv", options, &long_index)) >= 0) {
 		switch(opt) {
 			case 'h':
 				display_usage(argv[0]);

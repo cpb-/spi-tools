@@ -61,7 +61,7 @@ You can use `make uninstall` (with `sudo`) to remove the installed files.
 * `-l --lsb={0,1}`     LSB first (1) or MSB first (0).
 * `-b --bits=[7...]`   bits per word.
 * `-s --speed=<int>`   set the speed in Hz.
-* `-r --spirdy={0,1}`   set the SPI_READY spi mode flag.
+* `-r --spirdy={0,1}`  set the SPI_READY spi mode flag.
 * `-w --wait`          block, keeping the file descriptor open.
 * `-h --help`          help screen.
 * `-v --version`       display the version number.
