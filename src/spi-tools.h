@@ -21,21 +21,23 @@
 #ifndef SPI_TOOLS_H
 #define SPI_TOOLS_H
 
+#include <stddef.h>
+
 
 typedef struct spi_config {
 
-    int        spi_mode;      // [0-3]  (-1 when not configured).
-    int        lsb_first;     // {0,1}  (-1 when not configured).
-    int        bits_per_word; // [7...] (-1 when not configured).
-    int        spi_speed;     // 0 when not configured.
-    int        spi_ready;     // {0,1}  (-1 when not configured).
+    int          spi_mode;      // [0-3]  (-1 when not configured).
+    int          lsb_first;     // {0,1}  (-1 when not configured).
+    int          bits_per_word; // [7...] (-1 when not configured).
+    unsigned int spi_speed;     // 0 when not configured.
+    int          spi_ready;     // {0,1}  (-1 when not configured).
 
 } spi_config_t;
 
 
 int Read_spi_configuration(int fd, spi_config_t *config);
 
-int Write_spi_configuration(int fd, spi_config_t *config);
+int Write_spi_configuration(int fd, const spi_config_t *config);
 
 int Parse_spi_mode(const char *optarg, spi_config_t *config);
 
@@ -47,7 +49,7 @@ int Parse_spi_ready(const char *optarg, spi_config_t *config);
 
 int Parse_spi_bits_per_word(const char *optarg, spi_config_t *config);
 
-int Transfer_spi_buffers(int fd, void *tx_buffer, void *rx_buffer, size_t length);
+int Transfer_spi_buffers(int fd, const void *tx_buffer, void *rx_buffer, size_t length);
 
 
 #endif
