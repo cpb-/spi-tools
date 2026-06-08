@@ -18,40 +18,36 @@
  *
  */
 
+// ---------------------- System headers.
+
 #include <fcntl.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "config.h"
 
+
+// ---------------------- Project headers.
+
+#include "config.h"
 #include "spi-tools.h"
 
-static char *project = "spi-config";
+
+// ---------------------- Private macros declarations.
+
+// ---------------------- Private types and structures.
+
+// ---------------------- Private method declarations.
+
+static void display_usage(const char * name);
 
 
+// ---------------------- Private variables.
 
-static void display_usage(const char * name)
-{
-	fprintf(stderr, "usage: %s options...\n", name);
-	fprintf(stderr, "  options:\n");
-	fprintf(stderr, "    -d --device=<dev>  use the given spi-dev character device.\n");
-	fprintf(stderr, "    -q --query         print the current configuration.\n");
-	fprintf(stderr, "    -m --mode=[0-3]    use the selected spi mode:\n");
-	fprintf(stderr, "             0: low idle level, sample on leading edge,\n");
-	fprintf(stderr, "             1: low idle level, sample on trailing edge,\n");
-	fprintf(stderr, "             2: high idle level, sample on leading edge,\n");
-	fprintf(stderr, "             3: high idle level, sample on trailing edge.\n");
-	fprintf(stderr, "    -l --lsb={0,1}     LSB first (1) or MSB first (0).\n");
-	fprintf(stderr, "    -b --bits=[7...]   bits per word.\n");
-	fprintf(stderr, "    -s --speed=<int>   set the speed in Hz.\n");
-	fprintf(stderr, "    -r --spirdy={0,1}  consider SPI_RDY signal (1) or ignore it (0).\n");
-	fprintf(stderr, "    -w --wait          block keeping the file descriptor open to avoid speed reset.\n");
-	fprintf(stderr, "    -h --help          this screen.\n");
-	fprintf(stderr, "    -v --version       display the version number.\n");
+static const char project[] = "spi-config";
 
-}
 
+// ---------------------- Public methods
 
 int main (int argc, char * argv[])
 {
@@ -79,6 +75,7 @@ int main (int argc, char * argv[])
 	int           val;
 	int           query_only = 0;
 	int           wait = 0;
+	int           changed = 0;
 
 	new_config.spi_mode = -1;
 	new_config.lsb_first = -1;
@@ -109,11 +106,13 @@ int main (int argc, char * argv[])
 			case 'm':
 				if (Parse_spi_mode(optarg, &new_config) != 0)
 					exit(EXIT_FAILURE);
+				changed = 1;
 				break;
 
 			case 'l':
 				if (Parse_lsb_first(optarg, &new_config) != 0)
 					exit(EXIT_FAILURE);
+				changed = 1;
 				break;
 
 			case 'b':
@@ -122,23 +121,36 @@ int main (int argc, char * argv[])
 					fprintf(stderr, "%s: wrong bits per word value [7...]\n", argv[0]);
 					exit(EXIT_FAILURE);
 				}
+				changed = 1;
 				new_config.bits_per_word = val;
 				break;
 
 			case 's':
 				if (Parse_spi_speed(optarg, &new_config) != 0)
 					exit(EXIT_FAILURE);
+				changed = 1;
 				break;
 
 			case 'r':
 				if (Parse_spi_ready(optarg, &new_config) != 0)
 					exit(EXIT_FAILURE);
+				changed = 1;
 				break;
 
 			default:
 				fprintf(stderr, "%s: wrong option. Use -h for help.\n", argv[0]);
 				exit(EXIT_FAILURE);
 		}
+	}
+
+	if (optind < argc) {
+		fprintf(stderr, "%s: unexpected argument: %s\n", argv[0], argv[optind]);
+		exit(EXIT_FAILURE);
+	}
+
+	if (query_only && changed) {
+		fprintf(stderr, "%s: `-q` cannot be used with configuration options.\n", argv[0]);
+		exit(EXIT_FAILURE);
 	}
 
 	if (device == NULL) {
@@ -186,4 +198,29 @@ int main (int argc, char * argv[])
 
 	return EXIT_SUCCESS;
 }
+
+
+// ---------------------- Private methods
+
+static void display_usage(const char * name)
+{
+	fprintf(stderr, "usage: %s options...\n", name);
+	fprintf(stderr, "  options:\n");
+	fprintf(stderr, "    -d --device=<dev>  use the given spi-dev character device.\n");
+	fprintf(stderr, "    -q --query         print the current configuration.\n");
+	fprintf(stderr, "    -m --mode=[0-3]    use the selected spi mode:\n");
+	fprintf(stderr, "             0: low idle level, sample on leading edge,\n");
+	fprintf(stderr, "             1: low idle level, sample on trailing edge,\n");
+	fprintf(stderr, "             2: high idle level, sample on leading edge,\n");
+	fprintf(stderr, "             3: high idle level, sample on trailing edge.\n");
+	fprintf(stderr, "    -l --lsb={0,1}     LSB first (1) or MSB first (0).\n");
+	fprintf(stderr, "    -b --bits=[7...]   bits per word.\n");
+	fprintf(stderr, "    -s --speed=<int>   set the speed in Hz.\n");
+	fprintf(stderr, "    -r --spirdy={0,1}  consider SPI_RDY signal (1) or ignore it (0).\n");
+	fprintf(stderr, "    -w --wait          block keeping the file descriptor open to avoid speed reset.\n");
+	fprintf(stderr, "    -h --help          this screen.\n");
+	fprintf(stderr, "    -v --version       display the version number.\n");
+
+}
+
 
