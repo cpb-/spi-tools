@@ -1,7 +1,7 @@
 /*
  * spidev data transfer tool.
  *
- * (c) 2014-2021 Christophe BLAESS <christophe.blaess@logilin.fr>
+ * (c) 2014-2026 Christophe BLAESS <christophe.blaess@logilin.fr>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -99,7 +99,7 @@ int main (int argc, char *argv[])
 
 			case 'v':
 				fprintf(stderr, "%s - %s\n", project, VERSION);
-				fprintf(stderr, "Copyright (c) 2014-2021 Christophe Blaess. (license GPLv2)\n");
+				fprintf(stderr, "Copyright (c) 2014-2026 Christophe Blaess. (license GPLv2)\n");
 				fprintf(stderr, "This is free software. You are free to change and redistribute it.\n");
 				fprintf(stderr, "There is NO WARRANTY, to the extent permitted by law.\n");
 				exit(EXIT_SUCCESS);
