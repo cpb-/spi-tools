@@ -49,6 +49,8 @@ int Parse_spi_ready(const char *optarg, spi_config_t *config);
 
 int Parse_spi_bits_per_word(const char *optarg, spi_config_t *config);
 
+int Parse_bytes_per_block(const char *optarg, size_t *block_size);
+
 int Transfer_spi_buffers(int fd, const void *tx_buffer, void *rx_buffer, size_t length);
 
 

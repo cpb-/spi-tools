@@ -218,6 +218,30 @@ int Parse_spi_bits_per_word(const char *optarg, spi_config_t *config)
 
 
 
+int Parse_bytes_per_block(const char *optarg, size_t *block_size)
+{
+	char *end = NULL;
+	unsigned long tmpvalue;
+
+	if ((optarg != NULL) && (block_size != NULL)) {
+
+		errno = 0;
+		tmpvalue = strtol(optarg, &end, 0);
+		if ((errno == 0) && (end != optarg) && (*end == '\0')) {
+			if (tmpvalue >= 1) {
+				*block_size = tmpvalue;
+				return 0;
+			}
+		}
+		fprintf(stderr, "Error: invalid value for block_size: %s\n", optarg);
+		return -1;
+	}
+	fprintf(stderr, "Error: invalid parameter for function %s\n", __FUNCTION__);
+	return -1;
+}
+
+
+
 int Transfer_spi_buffers(int fd, const void *tx_buffer, void *rx_buffer, size_t length)
 {
 	struct spi_ioc_transfer transfer = {

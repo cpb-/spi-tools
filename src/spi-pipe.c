@@ -134,7 +134,7 @@ int main (int argc, char *argv[])
 				break;
 
 			case 'b':
-				if (Parse_spi_bits_per_word(optarg, &new_config) != 0)
+				if (Parse_bytes_per_block(optarg, &block_size) != 0)
 					exit(EXIT_FAILURE);
 				break;
 
