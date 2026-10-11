@@ -8,7 +8,7 @@
 #
 #######################################################################
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
 project(SPI_TOOLS VERSION 1.0.2)
 
 configure_file(src/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
