@@ -48,3 +48,7 @@ config.status
 *.hex
 src/spi-pipe
 src/spi-config
+/build/
+/src/config.h
+/test-suite.log
+*.trs
