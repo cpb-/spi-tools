@@ -87,7 +87,7 @@ int main (int argc, char *argv[])
 	new_config.spi_mode = -1;
 	new_config.lsb_first = -1;
 	new_config.bits_per_word = -1;
-	new_config.spi_speed = -1;
+	new_config.spi_speed = 0;
 	new_config.spi_ready = -1;
 
 
