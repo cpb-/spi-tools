@@ -2,7 +2,7 @@
 
 This package contains some simple command line tools to help using Linux spidev devices.
 
-Version 1.1.1
+Version 1.2.0
 
 ## Content
 
