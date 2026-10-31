@@ -20,6 +20,7 @@
 
 // ---------------------- System headers.
 
+#include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
 #include <stdio.h>
@@ -72,7 +73,6 @@ int main (int argc, char * argv[])
 	spi_config_t  new_config;
 	spi_config_t  config;
 	int           fd;
-	int           val;
 	int           query_only = 0;
 	int           wait = 0;
 	int           changed = 0;
@@ -116,15 +116,24 @@ int main (int argc, char * argv[])
 				break;
 
 			case 'b':
-				if ((sscanf(optarg, "%d", &val) != 1)
-				 || (val < 7)) {
-					fprintf(stderr, "%s: wrong bits per word value [7...]\n", argv[0]);
-					exit(EXIT_FAILURE);
-				}
-				changed = 1;
-				new_config.bits_per_word = val;
-				break;
+				{
+					char *end = NULL;
+					long int tmpvalue;
 
+					errno = 0;
+					tmpvalue = strtol(optarg, &end, 0);
+					if ((errno != 0) || (end == optarg) || (*end != '\0')) {
+						fprintf(stderr, "%s: wrong argument for bits per word\n", argv[0]);
+						exit(EXIT_FAILURE);
+					}
+					if ((tmpvalue < 7) || (tmpvalue > 255)) {
+						fprintf(stderr, "%s: wrong value for bits per word\n", argv[0]);
+						exit(EXIT_FAILURE);
+					}
+					changed = 1;
+					new_config.bits_per_word = tmpvalue;
+					break;
+				}
 			case 's':
 				if (Parse_spi_speed(optarg, &new_config) != 0)
 					exit(EXIT_FAILURE);

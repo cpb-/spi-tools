@@ -22,6 +22,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <getopt.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -66,7 +67,7 @@ int main (int argc, char *argv[])
 		{"lsb",       required_argument, NULL,  'l' },
 		{"mode",      required_argument, NULL,  'm' },
 		{"bits",      required_argument, NULL,  'B' },
-		{"ready",     required_argument, NULL,  'r' },
+		{"spirdy",    required_argument, NULL,  'r' },
 		{"help",      no_argument,       NULL,  'h' },
 		{"version",   no_argument,       NULL,  'v' },
 		{0,           0,                 0,  0 }
@@ -139,19 +140,34 @@ int main (int argc, char *argv[])
 					exit(EXIT_FAILURE);
 				break;
 
-			case 'n':
-				if ((sscanf(optarg, "%d", &blocks_count) != 1)
-				 || (blocks_count < -1)) {
-					fprintf(stderr, "%s: wrong block number\n", argv[0]);
-					exit(EXIT_FAILURE);
-				}
-				break;
+			case 'n': {
+					char *end = NULL;
+					long int tmpvalue;
 
+					errno = 0;
+					tmpvalue = strtol(optarg, &end, 0);
+					if ((errno != 0) || (end == optarg) || (*end != '\0')) {
+						fprintf(stderr, "%s: wrong argument for block number\n", argv[0]);
+						exit(EXIT_FAILURE);
+					}
+					if ((tmpvalue < -1) || (tmpvalue > INT_MAX)) {
+						fprintf(stderr, "%s: wrong value for block number\n", argv[0]);
+						exit(EXIT_FAILURE);
+					}
+					blocks_count = tmpvalue;
+					break;
+				}
 			default:
 				fprintf(stderr, "%s: wrong option. Use -h for help.\n", argv[0]);
 				exit(EXIT_FAILURE);
 		}
 	}
+
+	if (optind < argc) {
+		fprintf(stderr, "%s: unexpected argument: %s\n", argv[0], argv[optind]);
+		exit(EXIT_FAILURE);
+	}
+
 
 	if (((rx_buffer = malloc(block_size)) == NULL)
 	 || ((tx_buffer = malloc(block_size)) == NULL)) {
@@ -256,7 +272,7 @@ static void display_usage(const char *name)
 	fprintf(stderr, "    -s --speed=<speed>   Maximum SPI clock rate (in Hz).\n");
 	fprintf(stderr, "    -l --lsb={0,1}       LSB first (1) or MSB first (0).\n");
 	fprintf(stderr, "    -B --bits=[7...]     Bits per word.\n");
-	fprintf(stderr, "    -r --ready={0,1}     Spi ready mode.\n");
+	fprintf(stderr, "    -r --spirdy={0,1}    Spi ready mode.\n");
 	fprintf(stderr, "    -b --blocksize=<int> Transfer block size in byte.\n");
 	fprintf(stderr, "    -n --number=<int>    Number of blocks to transfer (-1 = infinite).\n");
 	fprintf(stderr, "    -h --help            This screen.\n");

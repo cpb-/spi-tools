@@ -181,10 +181,12 @@ int Parse_spi_speed(const char *optarg, spi_config_t *config)
 	if (config == NULL)
 		return -1;
 
-	if (parse_int_with_range(optarg, 0, 100000000, &(config->spi_speed)) != 0) {
+	int speed;
+	if (parse_int_with_range(optarg, 0, 100000000, &speed) != 0) {
 		fprintf(stderr, "Error: invalid SPI speed ([0-100000000]): %s\n", optarg ? optarg : "(null)");
 		return -1;
 	}
+	config->spi_speed = (unsigned int) speed;
 	return 0;
 }
 
@@ -221,14 +223,13 @@ int Parse_spi_bits_per_word(const char *optarg, spi_config_t *config)
 int Parse_bytes_per_block(const char *optarg, size_t *block_size)
 {
 	char *end = NULL;
-	unsigned long tmpvalue;
+	long tmpvalue;
 
 	if ((optarg != NULL) && (block_size != NULL)) {
-
 		errno = 0;
 		tmpvalue = strtol(optarg, &end, 0);
 		if ((errno == 0) && (end != optarg) && (*end == '\0')) {
-			if (tmpvalue >= 1) {
+			if ((tmpvalue >= 1) && (tmpvalue < UINT32_MAX)) {
 				*block_size = tmpvalue;
 				return 0;
 			}
