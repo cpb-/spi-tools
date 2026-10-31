@@ -1,5 +1,4 @@
 /*
- * SPDX-License-Identifier: GPL-2.0-only
  * spidev tools.
  *
  * (c) 2014-2021 Christophe BLAESS <christophe.blaess@logilin.fr>

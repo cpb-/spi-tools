@@ -19,6 +19,8 @@
  *
  */
 
+#include <config.h>
+
 // ---------------------- System headers.
 
 #include <errno.h>
@@ -26,6 +28,7 @@
 #include <limits.h>
 #include <getopt.h>
 #include <stdint.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,7 +37,6 @@
 
 // ---------------------- Project headers.
 
-#include "config.h"
 #include "spi-tools.h"
 
 
@@ -46,11 +48,13 @@
 
 static void display_usage(const char *name);
 static int full_write(int fd, const void *buffer, size_t length);
+static void handle_signal(int signum);
 
 
 // ---------------------- Private variables.
 
 static const char project[] = "spi-pipe";
+static volatile sig_atomic_t termination_signal = 0;
 
 
 // ---------------------- Public methods
@@ -80,6 +84,8 @@ int main (int argc, char *argv[])
 	uint8_t *tx_buffer = NULL;
 	spi_config_t prev_config;
 	spi_config_t new_config;
+	int config_changed;
+	struct sigaction action;
 
 	size_t block_size    =  1;
 	int blocks_count     = -1;
@@ -172,7 +178,7 @@ int main (int argc, char *argv[])
 
 	if (((rx_buffer = malloc(block_size)) == NULL)
 	 || ((tx_buffer = malloc(block_size)) == NULL)) {
-		fprintf(stderr, "%s: not enough memory to allocate two %ld bytes buffers\n",
+		fprintf(stderr, "%s: not enough memory to allocate two %zu bytes buffers\n",
 		                argv[0], block_size);
 		exit(EXIT_FAILURE);
 	}
@@ -209,12 +215,28 @@ int main (int argc, char *argv[])
 	if (new_config.spi_ready == -1)
 		new_config.spi_ready = prev_config.spi_ready;
 
-	if (memcmp(&prev_config, &new_config, sizeof(spi_config_t)) != 0)
-		if (Write_spi_configuration(fd, &new_config) != 0)
-			exit(EXIT_FAILURE);
+	memset(&action, 0, sizeof(action));
+	action.sa_handler = handle_signal;
+	sigemptyset(&action.sa_mask);
+	if ((sigaction(SIGINT, &action, NULL) < 0)
+	 || (sigaction(SIGTERM, &action, NULL) < 0)
+	 || (sigaction(SIGPIPE, &action, NULL) < 0)) {
+		perror("sigaction");
+		exit(EXIT_FAILURE);
+	}
 
-	while ((blocks_count > 0) || (blocks_count == -1)) {
-		for (offset = 0; offset < block_size;) {
+	config_changed = prev_config.spi_mode != new_config.spi_mode
+	              || prev_config.lsb_first != new_config.lsb_first
+	              || prev_config.bits_per_word != new_config.bits_per_word
+	              || prev_config.spi_speed != new_config.spi_speed
+	              || prev_config.spi_ready != new_config.spi_ready;
+	if (config_changed && !termination_signal)
+		if (Write_spi_configuration(fd, &new_config) != 0)
+			status = EXIT_FAILURE;
+
+	while ((status == EXIT_SUCCESS) && !termination_signal
+	    && ((blocks_count > 0) || (blocks_count == -1))) {
+		for (offset = 0; (offset < block_size) && !termination_signal;) {
 			nb = read(STDIN_FILENO, & (tx_buffer[offset]), block_size - offset);
 			if (nb < 0) {
 				if (errno == EINTR)
@@ -227,7 +249,7 @@ int main (int argc, char *argv[])
 				break;
 			offset += (size_t)nb;
 		}
-		if ((nb < 0) || (offset == 0))
+		if (termination_signal || (nb < 0) || (offset == 0))
 			break;
 
 		if (Transfer_spi_buffers(fd, tx_buffer, rx_buffer, offset) != 0) {
@@ -247,9 +269,13 @@ int main (int argc, char *argv[])
 	free(rx_buffer);
 	free(tx_buffer);
 
-	if (memcmp(&prev_config, &new_config, sizeof(spi_config_t)) != 0)
+	if (config_changed)
 		if (Write_spi_configuration(fd, &prev_config) != 0)
-			exit(EXIT_FAILURE);
+			status = EXIT_FAILURE;
+
+	close(fd);
+	if (termination_signal)
+		return 128 + termination_signal;
 
 	if (blocks_count > 0)
 		status = EXIT_FAILURE;
@@ -272,7 +298,7 @@ static void display_usage(const char *name)
 	fprintf(stderr, "             3: high idle level, sample on trailing edge.\n");
 	fprintf(stderr, "    -s --speed=<speed>   Maximum SPI clock rate (in Hz).\n");
 	fprintf(stderr, "    -l --lsb={0,1}       LSB first (1) or MSB first (0).\n");
-	fprintf(stderr, "    -B --bits=[7...]     Bits per word.\n");
+	fprintf(stderr, "    -B --bits=[7-255]    Bits per word.\n");
 	fprintf(stderr, "    -r --spirdy={0,1}    Spi ready mode.\n");
 	fprintf(stderr, "    -b --blocksize=<int> Transfer block size in byte.\n");
 	fprintf(stderr, "    -n --number=<int>    Number of blocks to transfer (-1 = infinite).\n");
@@ -288,6 +314,10 @@ static int full_write(int fd, const void *buffer, size_t length)
 	size_t done = 0;
 
 	while (done < length) {
+		if (termination_signal) {
+			errno = EINTR;
+			return -1;
+		}
 		ssize_t n = write(fd, ptr + done, length - done);
 		if (n > 0) {
 			done += (size_t)n;
@@ -295,7 +325,16 @@ static int full_write(int fd, const void *buffer, size_t length)
 		}
 		if ((n < 0) && (errno == EINTR))
 			continue;
+		if (n == 0)
+			errno = EIO;
 		return -1;
 	}
 	return 0;
+}
+
+
+static void handle_signal(int signum)
+{
+	if (!termination_signal)
+		termination_signal = signum;
 }
