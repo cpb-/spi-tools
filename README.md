@@ -25,7 +25,7 @@ https://www.blaess.fr/christophe
 
 ## Installation
 
-There's two ways to install `spi-tools`: using Autotools or using Cmake.
+There's two ways to install `spi-tools`: using Autotools or using CMake.
 
 ### Autotools
 
@@ -47,7 +47,49 @@ prefix to be inserted before all the toolchain commands (giving for example
 
 You can use `make uninstall` (with `sudo`) to remove the installed files.
 
-### Cmake
+### CMake
+
+Build outside the source directory (CMake 3.10 or later):
+
+```sh
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=/usr/local ..
+cmake --build .
+ctest --output-on-failure
+```
+
+Install the tools and manual pages with `cmake --build . --target install`.
+For a staged package installation, use
+`DESTDIR=/path/to/stage cmake --build . --target install`.
+The `CMAKE_INSTALL_BINDIR` and `CMAKE_INSTALL_MANDIR` options select the
+installation directories relative to the prefix. Cross compilation uses
+`-DCMAKE_TOOLCHAIN_FILE=/path/to/toolchain.cmake`.
+
+For example, with the Android NDK, configure a separate build directory:
+
+```sh
+cmake -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" \
+      -DANDROID_PLATFORM=android-21 -DANDROID_ABI=armeabi-v7a ..
+cmake --build .
+```
+
+### Android platform (Soong)
+
+The `Android.bp` file builds the two device binaries directly, without a shared
+library. From an initialized Android platform build environment, run
+`m spi_tools`. Device permissions must allow access to the spidev device.
+
+### Development and releases
+
+`VERSION` is the authoritative version for Autotools, CMake and Soong. Update it
+and the version shown in this README when preparing a release, then run
+`autoreconf -fi` to regenerate the release's `configure` script.
+Run `make check` and `make distcheck` for Autotools, and `ctest` for CMake.
+For an unoptimized debug build, configure with
+`CFLAGS='-g -O0' ./configure --enable-debug`.
+The regression tests require Python 3 and a native C compiler; they simulate
+spidev without requiring hardware. Cross builds skip these native tests.
 
 ## Usage
 
@@ -59,16 +101,12 @@ You can use `make uninstall` (with `sudo`) to remove the installed files.
 * `-q --query`         print the current configuration.
 * `-m --mode=[0-3]`    use the selected spi mode.
 * `-l --lsb={0,1}`     LSB first (1) or MSB first (0).
-* `-b --bits=[7...]`   bits per word.
+* `-b --bits=[7-255]`   bits per word.
 * `-s --speed=<int>`   set the speed in Hz.
 * `-r --spirdy={0,1}`  set the SPI_READY spi mode flag.
 * `-w --wait`          block, keeping the file descriptor open.
 * `-h --help`          help screen.
 * `-v --version`       display the version number.
-
-* Some examples using a build folder under the source tree root:
-
-Android : `cmake -DCMAKE_TOOLCHAIN_FILE=~/Android/Sdk/ndk-bundle/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=android-21 -DANDROID_ABI=armeabi-v7a .. && make`
 
 #### Read the current configuration
 
@@ -109,7 +147,7 @@ $ kill $PID
 * `-m --mode=[0-3]`      use the selected spi mode.
 * `-s --speed=<speed>`   Maximum SPI clock rate (in Hz).
 * `-l --lsb={0,1}`       LSB first (1) or MSB first (0).
-* `-B --bits=[7...]`     bits per word.
+* `-B --bits=[7-255]`     bits per word.
 * `-r --spirdy={0,1}`    set the SPI_READY spi mode flag.
 * `-b --blocksize=<int>` transfer block size in byte.
 * `-n --number=<int>`    number of blocks to transfer.
@@ -155,3 +193,12 @@ For example, to send the bytes sequence 0x01-0x82-0xF3 and see the reply, use:
 ```
 $ printf '\x01\x82\xF3' | spi-pipe -d /dev/spidev0.0 | hexdump -C
 ```
+
+`spi-pipe` restores the previous configuration on normal exit, I/O errors,
+and handled SIGINT, SIGTERM or SIGPIPE signals. Signal handlers only request
+termination; restoration happens in the main program. On a handled signal,
+the exit status is 128 plus the signal number. SIGKILL and uninterruptible
+kernel operations cannot be handled this way.
+
+A normal end of input is successful unless `-n` requested more blocks than
+were available. A final partial block is transferred and counts as one block.
