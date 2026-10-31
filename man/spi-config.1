@@ -69,7 +69,7 @@ Change clock frequency to 1 MHz:
 $ \fBspi\-config \-\-device=/dev/spidev0.0 \-\-speed=1000000\fR
 .TP
 Set a configuration and keep the device open:
-$ \fBspi\-config \-\-wait \-\-speed=1000000\fR & PID=$!
+$ \fBspi\-config \-\-device=/dev/spidev0.0 \-\-wait \-\-speed=1000000\fR & PID=$!
 .TP
 Close device previously open:
 $ \fBkill\fP $PID

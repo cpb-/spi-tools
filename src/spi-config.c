@@ -19,6 +19,8 @@
  *
  */
 
+#include <config.h>
+
 // ---------------------- System headers.
 
 #include <errno.h>
@@ -31,7 +33,6 @@
 
 // ---------------------- Project headers.
 
-#include "config.h"
 #include "spi-tools.h"
 
 
@@ -81,7 +82,7 @@ int main (int argc, char * argv[])
 	new_config.spi_mode = -1;
 	new_config.lsb_first = -1;
 	new_config.bits_per_word = -1;
-	new_config.spi_speed = -1;
+	new_config.spi_speed = 0;
 	new_config.spi_ready = -1;
 
 	while ((opt = getopt_long(argc, argv, "d:qhvwm:l:b:s:r:", options, &long_index)) >= 0) {
@@ -178,7 +179,7 @@ int main (int argc, char * argv[])
 		exit(EXIT_FAILURE);
 
 	if (query_only) {
-		fprintf(stdout, "%s: mode=%d, lsb=%d, bits=%d, speed=%d, spiready=%d\n",
+		fprintf(stdout, "%s: mode=%d, lsb=%d, bits=%d, speed=%u, spiready=%d\n",
 		        device, config.spi_mode, config.lsb_first, config.bits_per_word,
 		        config.spi_speed, config.spi_ready);
 		exit(EXIT_SUCCESS);
@@ -193,7 +194,7 @@ int main (int argc, char * argv[])
 	if (new_config.bits_per_word == -1)
 		new_config.bits_per_word = config.bits_per_word;
 
-	if (new_config.spi_speed == -1)
+	if (new_config.spi_speed == 0)
 		new_config.spi_speed = config.spi_speed;
 
 	if (new_config.spi_ready == -1)

@@ -17,13 +17,23 @@ use the given Linux spidev character device.
 \fB\-s\fR, \fB\-\-speed\fR=\fI<int>\fR
 set the target SPI speed for transfer.
 .TP
+\fB\-m\fR, \fB\-\-mode\fR=\fI[0-3]\fR
+set the SPI mode (clock polarity and phase).
+.TP
+\fB\-l\fR, \fB\-\-lsb\fR=\fI{0,1}\fR
+set LSB first (1) or MSB first (0).
+.TP
 \fB\-B\fR, \fB\-\-bits\fR=\fI[7-255]\fR
 set the number of bits per word, subject to controller support.
+.TP
+\fB\-r\fR, \fB\-\-spirdy\fR=\fI{0,1}\fR
+set the SPI READY mode flag.
+.TP
 \fB\-b\fR, \fB\-\-blocksize\fR=\fI<int>\fR
 set the block size (in bytes) for transfer.
 .TP
 \fB\-n\fR, \fB\-\-number\fR=\fI<int>\fR
-set the number of blocks to transmit (-1 for continuous transfert).
+set the number of blocks to transmit (-1 for continuous transfer).
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 display the help screen and exit.
@@ -31,6 +41,15 @@ display the help screen and exit.
 \fB\-v\fR, \fB\-\-version\fR
 display the version number and exit.
 
+.SH EXIT STATUS
+Zero on normal end of input or after the requested number of blocks.
+Nonzero on an I/O error or if input ends before the requested block count.
+A final partial block counts as one block.
+.PP
+The previous SPI configuration is restored on normal exit, I/O errors,
+and handled SIGINT, SIGTERM or SIGPIPE signals. For these signals the exit
+status is 128 plus the signal number. SIGKILL cannot be handled, and
+uninterruptible kernel operations can delay termination.
 .SH EXAMPLES
 .TP
 Get help:
