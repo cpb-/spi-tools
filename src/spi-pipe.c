@@ -82,7 +82,8 @@ int main (int argc, char *argv[])
 	size_t block_size    =  1;
 	int blocks_count     = -1;
 	size_t offset        =  0;
-	size_t nb            =  0;
+	ssize_t nb           =  0;
+	int status           = EXIT_SUCCESS;
 
 	new_config.spi_mode = -1;
 	new_config.lsb_first = -1;
@@ -196,20 +197,30 @@ int main (int argc, char *argv[])
 			exit(EXIT_FAILURE);
 
 	while ((blocks_count > 0) || (blocks_count == -1)) {
-		for (offset = 0; offset < block_size; offset += nb) {
+		for (offset = 0; offset < block_size;) {
 			nb = read(STDIN_FILENO, & (tx_buffer[offset]), block_size - offset);
-			if (nb <= 0)
+			if (nb < 0) {
+				if (errno == EINTR)
+					continue;
+				perror("read");
+				status = EXIT_FAILURE;
 				break;
+			}
+			if (nb == 0)
+				break;
+			offset += (size_t)nb;
 		}
-		if ((nb <= 0) && (offset == 0))
+		if ((nb < 0) || (offset == 0))
 			break;
 
 		if (Transfer_spi_buffers(fd, tx_buffer, rx_buffer, offset) != 0) {
 			perror("SPI_IOC_MESSAGE");
+			status = EXIT_FAILURE;
 			break;
 		}
 		if (full_write(STDOUT_FILENO, rx_buffer, offset) < 0) {
 			perror("write");
+			status = EXIT_FAILURE;
 			break;
 		}
 		if (blocks_count > 0)
@@ -223,10 +234,10 @@ int main (int argc, char *argv[])
 		if (Write_spi_configuration(fd, &prev_config) != 0)
 			exit(EXIT_FAILURE);
 
-	if (blocks_count != 0)
-		return EXIT_FAILURE;
+	if (blocks_count > 0)
+		status = EXIT_FAILURE;
 
-	return EXIT_SUCCESS;
+	return status;
 }
 
 
