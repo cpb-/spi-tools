@@ -16,7 +16,7 @@ Send and receive data simultaneously to and from a SPI device.
 
 ## License
 
-The tools are released under the GPLv2 license. See `LICENSE` file for details.
+All project files are released under the GNU General Public License, version 2 only (GPL-2.0-only). See `LICENSE` file for details.
 
 ## Author
 

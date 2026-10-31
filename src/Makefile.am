@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-only
 bin_PROGRAMS = spi-config spi-pipe
 
 spi_config_SOURCES = spi-config.c spi-tools.c spi-tools.h

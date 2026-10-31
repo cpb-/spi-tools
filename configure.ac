@@ -1,4 +1,4 @@
-#                                               -*- Autoconf -*-
+# SPDX-License-Identifier: GPL-2.0-only
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.60])

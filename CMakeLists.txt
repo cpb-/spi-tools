@@ -3,8 +3,9 @@
 #
 # Copyright 2024  Christophe BLAESS (https://www.blaess.fr/christophe).
 #
-# License  GPLv3+:  This is free software:  you are free to  change and
-# redistribute it.There is NO WARRANTY, to the extent permitted by law.
+# SPDX-License-Identifier: GPL-2.0-only
+# License  GPLv2:  This is free software:  you are free to  change and
+# redistribute it. There is NO WARRANTY, to the extent permitted by law.
 #
 #######################################################################
 

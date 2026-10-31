@@ -1,12 +1,7 @@
-# Android.bp for the spi-tools project.
-#
-# Copyright 2025  Parsa Majidi (parsa.majidi@kynetics.com)
-#
-# License  GPLv3+:  This is free software:  you are free to  change and
-# redistribute it.There is NO WARRANTY, to the extent permitted by law.
-
-// spi-tools
-
+// SPDX-License-Identifier: GPL-2.0-only
+// Android.bp for the spi-tools project.
+// Copyright 2025 Parsa Majidi (parsa.majidi@kynetics.com)
+// Licensed under the GNU General Public License, version 2. See LICENSE.
 
 genrule {
     name: "generate_config_h",
