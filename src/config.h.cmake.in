@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#ifndef _CONFIG_H
-#define _CONFIG_H
+#ifndef SPI_TOOLS_CONFIG_H
+#define SPI_TOOLS_CONFIG_H
 
-#define VERSION "@SPI_TOOLS_VERSION_MAJOR@.@SPI_TOOLS_VERSION_MINOR@.@SPI_TOOLS_VERSION_PATCH@"
+#define VERSION "@SPI_TOOLS_VERSION@"
 
 #endif
