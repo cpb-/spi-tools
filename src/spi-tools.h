@@ -1,4 +1,5 @@
 /*
+ * SPDX-License-Identifier: GPL-2.0-only
  * spidev tools.
  *
  * (c) 2014-2021 Christophe BLAESS <christophe.blaess@logilin.fr>
@@ -28,7 +29,7 @@ typedef struct spi_config {
 
     int          spi_mode;      // [0-3]  (-1 when not configured).
     int          lsb_first;     // {0,1}  (-1 when not configured).
-    int          bits_per_word; // [7...] (-1 when not configured).
+    int          bits_per_word; // [7-255] (-1 when not configured).
     unsigned int spi_speed;     // 0 when not configured.
     int          spi_ready;     // {0,1}  (-1 when not configured).
 

@@ -224,7 +224,7 @@ static void display_usage(const char * name)
 	fprintf(stderr, "             2: high idle level, sample on leading edge,\n");
 	fprintf(stderr, "             3: high idle level, sample on trailing edge.\n");
 	fprintf(stderr, "    -l --lsb={0,1}     LSB first (1) or MSB first (0).\n");
-	fprintf(stderr, "    -b --bits=[7...]   bits per word.\n");
+	fprintf(stderr, "    -b --bits=[7-255]  bits per word.\n");
 	fprintf(stderr, "    -s --speed=<int>   set the speed in Hz.\n");
 	fprintf(stderr, "    -r --spirdy={0,1}  consider SPI_RDY signal (1) or ignore it (0).\n");
 	fprintf(stderr, "    -w --wait          block keeping the file descriptor open to avoid speed reset.\n");
